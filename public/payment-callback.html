@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Verification — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    body { background:var(--charcoal-50); display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; }
+    .verify-card { background:white; border-radius:var(--radius-xl); box-shadow:var(--shadow-xl); max-width:440px; width:100%; padding:48px 32px; text-align:center; }
+  </style>
+</head>
+<body>
+<div class="verify-card" id="verify-card">
+  <div class="spinner dark" style="width:40px;height:40px;border-width:3px;margin:0 auto 20px;"></div>
+  <h2 style="margin-bottom:8px;">Verifying Payment…</h2>
+  <p style="color:var(--text-muted);">Please wait while we confirm your payment with Paystack.</p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script>
+(async () => {
+  const params    = new URLSearchParams(window.location.search);
+  const reference = params.get('reference') || params.get('trxref');
+  const card      = document.getElementById('verify-card');
+
+  if (!reference) {
+    card.innerHTML = `<div style="font-size:2.5rem;margin-bottom:12px;">❌</div><h2>No Reference Found</h2><p style="color:var(--text-muted);margin-bottom:24px;">Could not find a payment reference. Please check your dashboard.</p><a href="/" class="btn btn-primary">Go Home</a>`;
+    return;
+  }
+
+  // Wait for auth
+  const user = await new Promise(resolve => {
+    const unsub = firebase.auth().onAuthStateChanged(u => { unsub(); resolve(u); });
+  });
+
+  if (!user) {
+    window.location.href = '/login.html';
+    return;
+  }
+
+  try {
+    const token = await user.getIdToken();
+    const res   = await fetch('/api/v1/payments/verify', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reference }),
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      card.innerHTML = `
+        <div style="font-size:3rem;margin-bottom:16px;">✅</div>
+        <h2 style="color:var(--status-success);margin-bottom:8px;">Payment Successful!</h2>
+        <p style="color:var(--text-secondary);margin-bottom:24px;">Your payment has been confirmed. Redirecting you now…</p>
+        <div class="spinner dark" style="margin:0 auto;"></div>`;
+      setTimeout(async () => {
+        const db = firebase.firestore();
+        const doc = await db.collection('users').doc(user.uid).get();
+        const role = doc.data()?.role;
+        window.location.href = role === 'worker' ? '/worker-dashboard.html' : '/client-dashboard.html';
+      }, 2000);
+    } else {
+      card.innerHTML = `
+        <div style="font-size:3rem;margin-bottom:16px;">⚠️</div>
+        <h2 style="margin-bottom:8px;">Payment Not Confirmed</h2>
+        <p style="color:var(--text-secondary);margin-bottom:24px;">${data.message || 'Your payment could not be verified. If money was deducted, please contact support.'}</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <a href="/contracts.html" class="btn btn-primary">View Contracts</a>
+          <a href="/contact.html"   class="btn btn-ghost">Contact Support</a>
+        </div>`;
+    }
+  } catch(e) {
+    card.innerHTML = `
+      <div style="font-size:3rem;margin-bottom:16px;">❌</div>
+      <h2 style="margin-bottom:8px;">Verification Failed</h2>
+      <p style="color:var(--text-secondary);margin-bottom:24px;">Network error. Please check your dashboard or contact support with reference: <strong>${reference}</strong></p>
+      <a href="/" class="btn btn-primary">Go Home</a>`;
+  }
+})();
+</script>
+</body>
+</html>

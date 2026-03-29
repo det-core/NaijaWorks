@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offers & Negotiation — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav" id="sidebar-nav-links"></nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user"><div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role" id="sidebar-user-role"></div></div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Offers & Negotiation</span>
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn" id="notif-btn">🔔<span class="notif-dot" id="notif-dot" style="display:none"></span></button>
+      </div>
+    </div>
+    <div class="notif-panel" id="notif-panel"><div class="notif-panel-header">Notifications</div><div class="notif-list"></div></div>
+
+    <div class="dash-content">
+      <div class="page-title">Offers</div>
+      <div class="page-subtitle">Manage your active offers and negotiations</div>
+
+      <!-- Filter tabs -->
+      <div class="tab-bar" style="margin-bottom:24px;">
+        <button class="tab-btn active" onclick="switchTab('pending',this)">Pending</button>
+        <button class="tab-btn" onclick="switchTab('countered',this)">Countered</button>
+        <button class="tab-btn" onclick="switchTab('accepted',this)">Accepted</button>
+        <button class="tab-btn" onclick="switchTab('declined',this)">Declined</button>
+        <button class="tab-btn" onclick="switchTab('all',this)">All</button>
+      </div>
+
+      <div id="offers-list" style="display:flex;flex-direction:column;gap:16px;"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Offer Detail Modal -->
+<div class="overlay" id="offer-detail-modal">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-offer-title">Offer Details</span>
+      <button class="modal-close" onclick="closeModal('offer-detail-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-offer-body"></div>
+    <div class="modal-footer" id="modal-offer-footer"></div>
+  </div>
+</div>
+
+<!-- Counter Offer Modal -->
+<div class="overlay" id="counter-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Make Counter Offer</span>
+      <button class="modal-close" onclick="closeModal('counter-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Your Counter Price (₦) <span class="required">*</span></label>
+        <input type="number" id="counter-price" class="form-input" placeholder="e.g. 25000" min="500" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Message (optional)</label>
+        <textarea id="counter-message" class="form-input" rows="2" placeholder="Explain your counter offer…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('counter-modal')">Cancel</button>
+      <button class="btn btn-primary" id="submit-counter-btn" onclick="submitCounter()">Send Counter</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+let currentTab = 'pending';
+let currentOfferId = null;
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function switchTab(status, btn) {
+  currentTab = status;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadOffers();
+}
+
+function buildSidebarLinks(role) {
+  const nav = document.getElementById('sidebar-nav-links');
+  if (role === 'worker') {
+    nav.innerHTML = `
+      <a href="/worker-dashboard.html" class="sidebar-link"><span class="icon">🏠</span>Dashboard</a>
+      <a href="/worker-jobs.html" class="sidebar-link"><span class="icon">💼</span>My Jobs</a>
+      <a href="/offers.html" class="sidebar-link active"><span class="icon">🤝</span>Offers</a>
+      <a href="/contracts.html" class="sidebar-link"><span class="icon">📄</span>Contracts</a>
+      <a href="/wallet.html" class="sidebar-link"><span class="icon">💰</span>Wallet</a>`;
+  } else {
+    nav.innerHTML = `
+      <a href="/client-dashboard.html" class="sidebar-link"><span class="icon">🏠</span>Dashboard</a>
+      <a href="/browse-workers.html" class="sidebar-link"><span class="icon">🔍</span>Find Workers</a>
+      <a href="/offers.html" class="sidebar-link active"><span class="icon">🤝</span>Offers</a>
+      <a href="/contracts.html" class="sidebar-link"><span class="icon">📄</span>Contracts</a>
+      <a href="/wallet.html" class="sidebar-link"><span class="icon">💰</span>Payments</a>`;
+  }
+}
+
+async function loadOffers() {
+  const listEl = document.getElementById('offers-list');
+  listEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);"><div class="spinner dark" style="margin:0 auto 12px;"></div>Loading offers…</div>`;
+
+  try {
+    const token = await getAuthToken();
+    const role  = dashUser.role;
+    const res   = await fetch(`/api/v1/offers?role=${role}&status=${currentTab}&limit=30`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const offers = data.offers || [];
+
+    if (!offers.length) {
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🤝</div>
+        <div class="empty-state-title">No ${currentTab} offers</div>
+        <div class="empty-state-desc">${currentTab === 'pending' ? 'No pending offers right now.' : 'Nothing here yet.'}</div>
+        ${role === 'client' ? '<a href="/browse-workers.html" class="btn btn-primary">Browse Workers</a>' : ''}</div>`;
+      return;
+    }
+
+    listEl.innerHTML = offers.map(o => renderOfferCard(o)).join('');
+  } catch(e) {
+    listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Failed to load</div><button class="btn btn-ghost" onclick="loadOffers()">Retry</button></div>`;
+  }
+}
+
+function renderOfferCard(o) {
+  const isWorker  = dashUser.role === 'worker';
+  const otherName = isWorker ? o.clientName : o.workerName;
+  const price     = o.counterPrice || o.offeredPrice;
+  const statusColors = { pending:'status-pending', countered:'status-info', accepted:'status-completed', declined:'status-cancelled' };
+
+  return `<div class="card" style="padding:0;">
+    <div style="padding:20px 24px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+        <div>
+          <div style="font-weight:700;font-size:1.0625rem;font-family:var(--font-display);">${o.jobTitle}</div>
+          <div style="font-size:0.875rem;color:var(--text-muted);margin-top:2px;">${isWorker ? '👤 From: ' : '👷 To: '}${otherName}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:1.25rem;font-weight:800;font-family:var(--font-display);color:var(--primary);">${formatNaira(price)}</div>
+          <span class="status-pill ${statusColors[o.status] || 'status-draft'}">${o.status}</span>
+        </div>
+      </div>
+      <div style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:12px;">${truncate(o.jobDescription||'',120)}</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:0.8125rem;color:var(--text-muted);">
+        <span>📅 ${timeAgo(o.createdAt)}</span>
+        ${o.duration ? `<span>⏱ ${o.duration}</span>` : ''}
+        ${o.workMode ? `<span>${o.workMode === 'remote' ? '💻 Remote' : '📍 Physical'}</span>` : ''}
+        ${o.counterPrice && o.counterPrice !== o.offeredPrice ? `<span>Original: ${formatNaira(o.offeredPrice)}</span>` : ''}
+      </div>
+    </div>
+    ${renderOfferActions(o)}
+  </div>`;
+}
+
+function renderOfferActions(o) {
+  const isWorker = dashUser.role === 'worker';
+  if (o.status === 'accepted') {
+    return `<div style="padding:12px 24px;border-top:1px solid var(--border);background:var(--green-50);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <span style="color:var(--green-800);font-size:0.875rem;font-weight:600;">✅ Accepted — Contract created</span>
+      ${o.contractId ? `<a href="/contracts.html?id=${o.contractId}" class="btn btn-primary btn-sm">View Contract →</a>` : ''}
+    </div>`;
+  }
+  if (o.status === 'declined') {
+    return `<div style="padding:12px 24px;border-top:1px solid var(--border);background:#fef2f2;">
+      <span style="color:var(--status-error);font-size:0.875rem;">❌ Offer declined</span>
+    </div>`;
+  }
+  if (o.status === 'pending' || o.status === 'countered') {
+    const actions = [];
+    if (isWorker) {
+      actions.push(`<button class="btn btn-primary btn-sm" onclick="acceptOffer('${o.id}')">✅ Accept</button>`);
+      actions.push(`<button class="btn btn-ghost btn-sm" onclick="openCounterModal('${o.id}','${o.offeredPrice}')">↩️ Counter</button>`);
+      actions.push(`<button class="btn btn-ghost btn-sm" style="color:var(--status-error);" onclick="declineOffer('${o.id}')">❌ Decline</button>`);
+    } else {
+      if (o.status === 'countered') {
+        actions.push(`<button class="btn btn-primary btn-sm" onclick="acceptOffer('${o.id}')">✅ Accept Counter</button>`);
+        actions.push(`<button class="btn btn-ghost btn-sm" onclick="openCounterModal('${o.id}','${o.counterPrice}')">↩️ Re-Counter</button>`);
+      }
+      actions.push(`<button class="btn btn-ghost btn-sm" style="color:var(--status-error);" onclick="declineOffer('${o.id}')">Cancel Offer</button>`);
+    }
+    return `<div style="padding:12px 24px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;">${actions.join('')}</div>`;
+  }
+  return '';
+}
+
+async function acceptOffer(offerId) {
+  if (!confirm('Accept this offer? A contract will be created automatically.')) return;
+  try {
+    const token = await getAuthToken();
+    const res = await fetch(`/api/v1/offers/${offerId}/accept`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.message, 'error'); return; }
+    showToast('Offer accepted! Contract created.', 'success');
+    setTimeout(() => { window.location.href = `/contracts.html?id=${data.contractId}`; }, 1500);
+  } catch(e) { showToast('Failed to accept offer', 'error'); }
+}
+
+async function declineOffer(offerId) {
+  if (!confirm('Decline this offer?')) return;
+  try {
+    const token = await getAuthToken();
+    const res = await fetch(`/api/v1/offers/${offerId}/decline`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.message, 'error'); return; }
+    showToast('Offer declined', 'info');
+    loadOffers();
+  } catch(e) { showToast('Failed', 'error'); }
+}
+
+function openCounterModal(offerId, currentPrice) {
+  currentOfferId = offerId;
+  document.getElementById('counter-price').value = currentPrice || '';
+  document.getElementById('counter-message').value = '';
+  openModal('counter-modal');
+}
+
+async function submitCounter() {
+  const price = document.getElementById('counter-price').value;
+  const message = document.getElementById('counter-message').value;
+  if (!price || parseFloat(price) < 500) { showToast('Enter a valid counter price', 'warning'); return; }
+
+  const btn = document.getElementById('submit-counter-btn');
+  setButtonLoading(btn, true, 'Sending…');
+
+  try {
+    const token = await getAuthToken();
+    const res = await fetch(`/api/v1/offers/${currentOfferId}/counter`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ counterPrice: parseFloat(price), message }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.message, 'error'); setButtonLoading(btn, false); return; }
+    closeModal('counter-modal');
+    showToast('Counter offer sent!', 'success');
+    loadOffers();
+  } catch(e) { showToast('Failed', 'error'); setButtonLoading(btn, false); }
+}
+
+(async () => {
+  await initDashboard();
+  buildSidebarLinks(dashUser.role);
+
+  // Pre-select offer from URL
+  const urlId = new URLSearchParams(window.location.search).get('id');
+  if (urlId) { currentTab = 'all'; document.querySelectorAll('.tab-btn').forEach((b,i)=>{ if(i===4) b.classList.add('active'); else b.classList.remove('active'); }); }
+
+  loadOffers();
+})();
+</script>
+</body>
+</html>

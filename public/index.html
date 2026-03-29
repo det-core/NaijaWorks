@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="NaijaWorks — Hire trusted Nigerian workers for local and remote services. Drivers, cleaners, developers, designers and more." />
+  <title>NaijaWorks — Hire Trusted Nigerian Workers</title>
+  <link rel="icon" href="/images/favicon.png" type="image/png" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    /* ── Page-specific styles ── */
+    .trust-bar {
+      background: var(--charcoal-900);
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .trust-bar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,0.6);
+      font-weight: 500;
+    }
+    .trust-item span.dot { color: var(--green-400); font-size: 1rem; }
+
+    /* Hero */
+    .hero-search-wrap { margin-top: var(--space-8); }
+    .hero-popular {
+      margin-top: var(--space-5);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .hero-popular-label { font-size: 0.8125rem; color: rgba(255,255,255,0.5); }
+    .hero-popular-tag {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.75);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+    .hero-popular-tag:hover { background: rgba(255,255,255,0.15); color: white; }
+
+    /* Section alternating */
+    .section-alt { background: var(--charcoal-50); }
+
+    /* Why choose us */
+    .why-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+    @media (min-width: 640px)  { .why-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .why-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .why-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      transition: all var(--transition-normal);
+    }
+    .why-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--green-300); }
+
+    .why-icon {
+      width: 52px;
+      height: 52px;
+      background: var(--green-50);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: var(--space-4);
+    }
+    .why-title { font-size: 1rem; font-weight: 700; margin-bottom: var(--space-2); }
+    .why-desc  { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; }
+
+    /* Wallet explainer */
+    .wallet-section {
+      background: linear-gradient(135deg, var(--green-900) 0%, var(--charcoal-900) 100%);
+      color: white;
+    }
+    .wallet-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-10);
+      align-items: center;
+    }
+    @media (min-width: 768px) { .wallet-grid { grid-template-columns: 1fr 1fr; } }
+
+    .wallet-steps { display: flex; flex-direction: column; gap: var(--space-5); }
+    .wallet-step {
+      display: flex;
+      gap: var(--space-4);
+      align-items: flex-start;
+    }
+    .wallet-step-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(26,158,98,0.2);
+      border: 1px solid rgba(26,158,98,0.35);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .wallet-step-title  { font-weight: 700; font-family: var(--font-display); margin-bottom: 4px; }
+    .wallet-step-desc   { font-size: 0.9rem; color: rgba(255,255,255,0.6); line-height: 1.6; }
+
+    .wallet-card-mockup {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      backdrop-filter: blur(12px);
+    }
+    .wallet-balance-label { font-size: 0.8125rem; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+    .wallet-balance-amount {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 2.25rem;
+      color: white;
+      margin-bottom: var(--space-6);
+    }
+    .wallet-row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.875rem;
+    }
+    .wallet-row:last-child { border-bottom: none; }
+    .wallet-row-label { color: rgba(255,255,255,0.5); }
+    .wallet-row-value { color: white; font-weight: 600; }
+    .wallet-row-value.green { color: var(--green-400); }
+
+    /* Testimonials */
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+    @media (min-width: 640px)  { .testimonial-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .testimonial-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .testimonial-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+    .testimonial-stars { color: #f59e0b; font-size: 1rem; margin-bottom: var(--space-3); letter-spacing: 2px; }
+    .testimonial-text { font-size: 0.9375rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--space-5); font-style: italic; }
+    .testimonial-author { display: flex; align-items: center; gap: var(--space-3); }
+    .testimonial-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--green-800));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 0.875rem;
+      font-family: var(--font-display);
+    }
+    .testimonial-name  { font-weight: 700; font-size: 0.9rem; font-family: var(--font-display); }
+    .testimonial-role  { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* CTA Banner */
+    .cta-banner {
+      background: var(--primary);
+      border-radius: var(--radius-xl);
+      padding: var(--space-10) var(--space-8);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 50%;
+    }
+    .cta-banner::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: -30px;
+      width: 160px;
+      height: 160px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .cta-banner h2 {
+      font-size: clamp(1.5rem, 3vw, 2.25rem);
+      color: white;
+      margin-bottom: var(--space-4);
+    }
+    .cta-banner p { color: rgba(255,255,255,0.8); font-size: 1.0625rem; margin-bottom: var(--space-8); }
+    .cta-btn-group { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-4); position: relative; z-index: 1; }
+    .btn-white {
+      background: white;
+      color: var(--primary);
+      border: 2px solid white;
+      font-weight: 700;
+    }
+    .btn-white:hover { background: var(--green-50); color: var(--primary-dark); }
+    .btn-outline-white {
+      background: transparent;
+      color: white;
+      border: 2px solid rgba(255,255,255,0.5);
+    }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.1); border-color: white; }
+
+    /* Tabs for physical/remote */
+    .tab-bar {
+      display: flex;
+      background: var(--charcoal-100);
+      border-radius: var(--radius-lg);
+      padding: 4px;
+      gap: 4px;
+      width: fit-content;
+      margin-bottom: var(--space-8);
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      border-radius: var(--radius-md);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Fee table */
+    .fee-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .fee-table th {
+      background: var(--charcoal-900);
+      color: white;
+      padding: 14px 20px;
+      text-align: left;
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+    }
+    .fee-table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9375rem;
+      background: white;
+    }
+    .fee-table tr:last-child td { border-bottom: none; }
+    .fee-table tr:nth-child(even) td { background: var(--charcoal-50); }
+  </style>
+</head>
+<body>
+
+<!-- ─── Trust Bar ─────────────────────────────────────────── -->
+<div class="trust-bar">
+  <div class="container">
+    <div class="trust-bar-inner">
+      <div class="trust-item"><span class="dot">✓</span> Verified Workers</div>
+      <div class="trust-item"><span class="dot">🔒</span> Secure Escrow Payments</div>
+      <div class="trust-item"><span class="dot">⭐</span> Rated & Reviewed</div>
+      <div class="trust-item"><span class="dot">🇳🇬</span> Built for Nigeria</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Navigation ────────────────────────────────────────── -->
+<nav class="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <div class="nav-logo-icon">N</div>
+        Naija<span>Works</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="/browse-workers.html">Find Workers</a></li>
+        <li><a href="/browse-jobs.html">Find Jobs</a></li>
+        <li><a href="/categories.html">Categories</a></li>
+        <li><a href="/how-it-works.html">How It Works</a></li>
+        <li><a href="/pricing.html">Pricing</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="/login.html" class="btn btn-ghost btn-sm hide-mobile" id="nav-login-btn">Log In</a>
+        <a href="/signup.html" class="btn btn-primary btn-sm" id="nav-signup-btn">Get Started</a>
+        <a href="/client-dashboard.html" class="btn btn-primary btn-sm" id="nav-dashboard-btn" style="display:none">Dashboard</a>
+        <button class="btn btn-ghost btn-sm" id="nav-logout-btn" data-logout style="display:none">Log Out</button>
+        <button class="nav-menu-btn" id="nav-menu-btn" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── Mobile Menu ───────────────────────────────────────── -->
+<div class="mobile-menu" id="mobile-menu">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
+    <a href="/" class="nav-logo"><div class="nav-logo-icon">N</div>Naija<span>Works</span></a>
+    <button id="mobile-menu-close" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-primary);">✕</button>
+  </div>
+  <nav style="display:flex;flex-direction:column;gap:4px;margin-bottom:32px;">
+    <a href="/browse-workers.html" style="padding:14px 16px;border-radius:12px;color:var(--text-primary);font-weight:600;font-family:var(--font-display);">🔍 Find Workers</a>
+    <a href="/browse-jobs.html"    style="padding:14px 16px;border-radius:12px;color:var(--text-primary);font-weight:600;font-family:var(--font-display);">💼 Find Jobs</a>
+    <a href="/categories.html"     style="padding:14px 16px;border-radius:12px;color:var(--text-primary);font-weight:600;font-family:var(--font-display);">📋 Categories</a>
+    <a href="/how-it-works.html"   style="padding:14px 16px;border-radius:12px;color:var(--text-primary);font-weight:600;font-family:var(--font-display);">❓ How It Works</a>
+    <a href="/pricing.html"        style="padding:14px 16px;border-radius:12px;color:var(--text-primary);font-weight:600;font-family:var(--font-display);">💰 Pricing</a>
+  </nav>
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <a href="/login.html"  class="btn btn-ghost  btn-full">Log In</a>
+    <a href="/signup.html" class="btn btn-primary btn-full">Get Started Free</a>
+  </div>
+</div>
+
+<!-- ─── Hero ──────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-dots"></div>
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-eyebrow animate-up fade-in-1">🇳🇬 Nigeria's #1 Hiring Marketplace</div>
+      <h1 class="animate-up fade-in-2">
+        Hire <span class="accent">Trusted Workers</span><br>
+        Locally & Remotely
+      </h1>
+      <p class="hero-sub animate-up fade-in-3">
+        Connect with verified Nigerian workers for any job — from drivers and cleaners to developers and designers. Pay securely, work confidently.
+      </p>
+      <div class="hero-actions animate-up fade-in-4">
+        <a href="/browse-workers.html" class="btn btn-primary btn-lg">Browse Workers</a>
+        <a href="/signup.html?role=worker" class="btn btn-outline-white btn-lg">Offer Your Services</a>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="hero-search-wrap animate-up fade-in-4">
+        <div class="search-bar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9298a8" stroke-width="2" style="flex-shrink:0;margin-left:8px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="hero-search" placeholder="Search for a service or skill…" autocomplete="off" />
+          <div class="search-divider hide-mobile"></div>
+          <select id="hero-search-type" class="hide-mobile">
+            <option value="all">All Services</option>
+            <option value="physical">Local / Physical</option>
+            <option value="remote">Remote / Digital</option>
+          </select>
+          <button class="btn btn-primary" onclick="handleHeroSearch()" style="border-radius:12px;margin:2px;">Search</button>
+        </div>
+        <div class="hero-popular">
+          <span class="hero-popular-label">Popular:</span>
+          <a href="/browse-workers.html?q=driver" class="hero-popular-tag">Driver</a>
+          <a href="/browse-workers.html?q=cleaner" class="hero-popular-tag">Cleaner</a>
+          <a href="/browse-workers.html?q=web+developer" class="hero-popular-tag">Web Developer</a>
+          <a href="/browse-workers.html?q=graphic+design" class="hero-popular-tag">Graphic Designer</a>
+          <a href="/browse-workers.html?q=cook" class="hero-popular-tag">Cook / Chef</a>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="hero-stats" style="margin-top:var(--space-12);">
+        <div class="animate-up fade-in-1">
+          <div class="hero-stat-value" id="stat-workers">5,000+</div>
+          <div class="hero-stat-label">Verified Workers</div>
+        </div>
+        <div class="animate-up fade-in-2">
+          <div class="hero-stat-value" id="stat-jobs">12,000+</div>
+          <div class="hero-stat-label">Jobs Completed</div>
+        </div>
+        <div class="animate-up fade-in-3">
+          <div class="hero-stat-value">36</div>
+          <div class="hero-stat-label">States Covered</div>
+        </div>
+        <div class="animate-up fade-in-4">
+          <div class="hero-stat-value">4.8★</div>
+          <div class="hero-stat-label">Average Rating</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Categories ────────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Browse by Category</div>
+      <h2 class="section-title">Find Any Service You Need</h2>
+      <p class="section-sub">From physical hands-on work to remote digital services — all in one place.</p>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchCategoryTab('physical', this)">🏘️ Local Services</button>
+      <button class="tab-btn" onclick="switchCategoryTab('remote', this)">💻 Remote / Digital</button>
+    </div>
+
+    <div id="tab-physical" class="tab-content active">
+      <div class="category-grid" id="physical-categories"></div>
+    </div>
+    <div id="tab-remote" class="tab-content">
+      <div class="category-grid" id="remote-categories"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:var(--space-8);">
+      <a href="/categories.html" class="btn btn-ghost">View All Categories →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Nearby Workers ────────────────────────────────────── -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+      <div>
+        <div class="section-eyebrow">Local Professionals</div>
+        <h2 class="section-title">Workers Near You</h2>
+        <p class="section-sub">Verified local workers ready to help today.</p>
+      </div>
+      <a href="/browse-workers.html?type=physical" class="btn btn-ghost hide-mobile">See All →</a>
+    </div>
+    <div class="worker-grid" id="nearby-workers-grid">
+      <!-- Skeleton loaders -->
+      <div class="card" style="height:200px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:200px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:200px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:200px;"><div class="skeleton" style="height:100%;"></div></div>
+    </div>
+    <div style="text-align:center;margin-top:var(--space-6);">
+      <a href="/browse-workers.html?type=physical" class="btn btn-secondary">Browse Local Workers</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Remote Professionals ─────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+      <div>
+        <div class="section-eyebrow">Digital Talent</div>
+        <h2 class="section-title">Remote Professionals</h2>
+        <p class="section-sub">Skilled Nigerian remote workers available from anywhere in Nigeria.</p>
+      </div>
+      <a href="/browse-workers.html?type=remote" class="btn btn-ghost hide-mobile">See All →</a>
+    </div>
+    <div class="worker-grid" id="remote-workers-grid">
+      <div class="card" style="height:200px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:200px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:200px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:200px;"><div class="skeleton" style="height:100%;"></div></div>
+    </div>
+    <div style="text-align:center;margin-top:var(--space-6);">
+      <a href="/browse-workers.html?type=remote" class="btn btn-secondary">Browse Remote Workers</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── How It Works ─────────────────────────────────────── -->
+<section class="section section-alt" id="how-it-works">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-eyebrow">Simple Process</div>
+      <h2 class="section-title">How NaijaWorks Works</h2>
+      <p class="section-sub">Get quality work done in 4 simple steps — safe payments guaranteed.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr;gap:24px;margin-bottom:48px;" id="hiw-grid">
+      <div class="card card-hover step-card animate-up">
+        <div class="step-number">1</div>
+        <h3 class="step-title">Post a Job or Browse Workers</h3>
+        <p class="step-desc">Search by service, location, or skill. Or post a job and let workers come to you with offers.</p>
+      </div>
+      <div class="card card-hover step-card animate-up">
+        <div class="step-number">2</div>
+        <h3 class="step-title">Review Profiles & Negotiate</h3>
+        <p class="step-desc">Check worker profiles, ratings, and portfolios. Chat, make offers, and agree on a fair price.</p>
+      </div>
+      <div class="card card-hover step-card animate-up">
+        <div class="step-number">3</div>
+        <h3 class="step-title">Pay Securely via Escrow</h3>
+        <p class="step-desc">Pay through NaijaWorks — your money is held safely until the job is done to your satisfaction.</p>
+      </div>
+      <div class="card card-hover step-card animate-up">
+        <div class="step-number">4</div>
+        <h3 class="step-title">Confirm & Release Payment</h3>
+        <p class="step-desc">When work is done, approve it. Payment goes straight to the worker's NaijaWorks wallet.</p>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <a href="/how-it-works.html" class="btn btn-secondary">Learn More →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Why NaijaWorks ────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-eyebrow">Why Choose Us</div>
+      <h2 class="section-title">Built for Nigeria. Built for Trust.</h2>
+      <p class="section-sub">We solve the real problems with hiring in Nigeria — trust, payment safety, and finding verified talent.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card animate-up">
+        <div class="why-icon">🔒</div>
+        <h3 class="why-title">Escrow-Protected Payments</h3>
+        <p class="why-desc">Your money is held securely until you confirm the job is done. No more paying and getting nothing in return.</p>
+      </div>
+      <div class="why-card animate-up">
+        <div class="why-icon">✅</div>
+        <h3 class="why-title">Verified Worker Profiles</h3>
+        <p class="why-desc">Workers are reviewed, rated, and verified. You see real ratings and real reviews before you hire.</p>
+      </div>
+      <div class="why-card animate-up">
+        <div class="why-icon">🤝</div>
+        <h3 class="why-title">Negotiation Built In</h3>
+        <p class="why-desc">Discuss prices, timelines, and expectations directly. Make counter-offers and agree on fair terms.</p>
+      </div>
+      <div class="why-card animate-up">
+        <div class="why-icon">📍</div>
+        <h3 class="why-title">Location-Aware Matching</h3>
+        <p class="why-desc">We use your location to show you workers near you. Get local help faster — right in your area.</p>
+      </div>
+      <div class="why-card animate-up">
+        <div class="why-icon">💸</div>
+        <h3 class="why-title">Fast Wallet Withdrawals</h3>
+        <p class="why-desc">Workers earn directly to their NaijaWorks wallet and withdraw to any Nigerian bank — 24–48 hour processing.</p>
+      </div>
+      <div class="why-card animate-up">
+        <div class="why-icon">🛡️</div>
+        <h3 class="why-title">Dispute Protection</h3>
+        <p class="why-desc">If something goes wrong, our dispute system protects both clients and workers fairly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Wallet & Payment Explainer ───────────────────────── -->
+<section class="section wallet-section">
+  <div class="container">
+    <div class="wallet-grid">
+      <div>
+        <div class="section-eyebrow" style="color:var(--green-400);">Secure Payments</div>
+        <h2 class="section-title" style="color:white;">Your Money is Always Safe</h2>
+        <p style="color:rgba(255,255,255,0.65);font-size:1.0625rem;line-height:1.7;margin-bottom:var(--space-8);">
+          NaijaWorks uses an escrow wallet system powered by Paystack — Nigeria's most trusted payment platform. Your funds never go directly to a worker until the job is complete.
+        </p>
+        <div class="wallet-steps">
+          <div class="wallet-step">
+            <div class="wallet-step-icon">💳</div>
+            <div>
+              <div class="wallet-step-title">Pay via Paystack</div>
+              <div class="wallet-step-desc">Card, bank transfer, or USSD — all Nigerian payment methods accepted.</div>
+            </div>
+          </div>
+          <div class="wallet-step">
+            <div class="wallet-step-icon">🔐</div>
+            <div>
+              <div class="wallet-step-title">Funds Held in Escrow</div>
+              <div class="wallet-step-desc">Money is locked until you approve the work. No disputes, no scams.</div>
+            </div>
+          </div>
+          <div class="wallet-step">
+            <div class="wallet-step-icon">✅</div>
+            <div>
+              <div class="wallet-step-title">Approve & Release</div>
+              <div class="wallet-step-desc">Confirm the job done, and funds release instantly to the worker's wallet.</div>
+            </div>
+          </div>
+          <div class="wallet-step">
+            <div class="wallet-step-icon">🏦</div>
+            <div>
+              <div class="wallet-step-title">Workers Withdraw to Bank</div>
+              <div class="wallet-step-desc">Workers withdraw to any Nigerian bank account within 24–48 hours.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="wallet-card-mockup">
+          <div class="wallet-balance-label">Available Balance</div>
+          <div class="wallet-balance-amount">₦245,800</div>
+          <div class="wallet-row">
+            <span class="wallet-row-label">Pending Earnings</span>
+            <span class="wallet-row-value">₦48,500</span>
+          </div>
+          <div class="wallet-row">
+            <span class="wallet-row-label">Total Earned</span>
+            <span class="wallet-row-value green">₦1,204,000</span>
+          </div>
+          <div class="wallet-row">
+            <span class="wallet-row-label">Commission (VIP 7%)</span>
+            <span class="wallet-row-value">₦84,280</span>
+          </div>
+          <div class="wallet-row">
+            <span class="wallet-row-label">Last Withdrawal</span>
+            <span class="wallet-row-value">₦120,000</span>
+          </div>
+          <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <button class="btn btn-primary btn-sm btn-full" style="background:rgba(26,158,98,0.25);border:1px solid rgba(26,158,98,0.4);color:var(--green-300);">Withdraw Funds</button>
+            <button class="btn btn-ghost btn-sm btn-full" style="border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);">View History</button>
+          </div>
+        </div>
+
+        <!-- Withdrawal fee info -->
+        <div style="margin-top:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-md);padding:16px;">
+          <div style="font-size:0.8125rem;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:12px;font-family:var(--font-display);">Withdrawal Fees</div>
+          <div style="font-size:0.8rem;color:rgba(255,255,255,0.45);display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;justify-content:space-between;"><span>₦10,000 – ₦15,000</span><span style="color:rgba(255,255,255,0.7);">₦500 fee</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>₦15,001 – ₦20,000</span><span style="color:rgba(255,255,255,0.7);">₦700 fee</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>₦20,001 – ₦25,000</span><span style="color:rgba(255,255,255,0.7);">₦1,000 fee</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>₦25,001 – ₦30,000</span><span style="color:rgba(255,255,255,0.7);">₦1,650 fee</span></div>
+          </div>
+          <a href="/fees.html" style="font-size:0.8rem;color:var(--green-400);margin-top:10px;display:block;">View full fee schedule →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── VIP Section ───────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-eyebrow">For Serious Workers</div>
+      <h2 class="section-title">Go VIP. Earn More.</h2>
+      <p class="section-sub">Upgrade to NaijaWorks VIP and keep more of your earnings.</p>
+    </div>
+
+    <div style="max-width:760px;margin:0 auto;">
+      <div class="vip-card">
+        <div class="vip-badge">⭐ NaijaWorks VIP Plan</div>
+        <div style="display:grid;grid-template-columns:1fr;gap:32px;" id="vip-grid">
+          <div>
+            <div class="vip-price">₦9,500 <span class="vip-price-period">/ week</span></div>
+            <p style="color:rgba(255,255,255,0.55);font-size:0.9375rem;margin-top:12px;line-height:1.6;">
+              Keep more of every naira you earn. VIP workers pay just 7% commission instead of the standard 20%.
+            </p>
+            <ul class="vip-features">
+              <li>Commission drops from 20% to just 7%</li>
+              <li>⭐ VIP / Pro badge on your profile</li>
+              <li>Priority placement in search results</li>
+              <li>Boosted profile visibility & ranking</li>
+              <li>Unlimited job offers</li>
+              <li>Higher client trust signals</li>
+            </ul>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
+              <a href="/signup.html?role=worker" class="btn" style="background:#f59e0b;color:white;border-color:#f59e0b;">Get VIP Now</a>
+              <a href="/pricing.html" class="btn btn-ghost" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);">Compare Plans</a>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-lg);padding:24px;">
+            <div style="font-size:0.8125rem;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:16px;font-family:var(--font-display);text-transform:uppercase;letter-spacing:0.05em;">Commission Comparison</div>
+            <div style="margin-bottom:20px;">
+              <div style="font-size:0.875rem;color:rgba(255,255,255,0.5);margin-bottom:8px;">Standard Plan — 20% Commission</div>
+              <div style="font-size:0.9rem;color:rgba(255,255,255,0.8);">On a ₦50,000 job:</div>
+              <div style="font-size:1.375rem;font-weight:800;color:white;font-family:var(--font-display);">You keep ₦40,000</div>
+              <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);">Platform takes ₦10,000</div>
+            </div>
+            <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;">
+              <div style="font-size:0.875rem;color:#f59e0b;margin-bottom:8px;">VIP Plan — 7% Commission</div>
+              <div style="font-size:0.9rem;color:rgba(255,255,255,0.8);">On the same ₦50,000 job:</div>
+              <div style="font-size:1.375rem;font-weight:800;color:#4ade80;font-family:var(--font-display);">You keep ₦46,500</div>
+              <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);">Platform takes ₦3,500</div>
+              <div style="margin-top:8px;padding:6px 12px;background:rgba(74,222,128,0.12);border-radius:var(--radius-sm);font-size:0.8rem;color:#4ade80;font-weight:700;display:inline-block;">Save ₦6,500 on this job alone ✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Testimonials ──────────────────────────────────────── -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header center">
+      <div class="section-eyebrow">Real People, Real Results</div>
+      <h2 class="section-title">What People Are Saying</h2>
+    </div>
+    <div class="testimonial-grid">
+      <div class="testimonial-card animate-up">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"I hired a plumber through NaijaWorks and was shocked how easy it was. Payment was held until the job was done properly. No more stress."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">AO</div>
+          <div>
+            <div class="testimonial-name">Adaeze Okafor</div>
+            <div class="testimonial-role">Client — Lagos</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card animate-up">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"As a freelance developer, NaijaWorks VIP changed everything. I went from 20% commission to 7% and the boosted visibility brought in 3x more clients."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">EI</div>
+          <div>
+            <div class="testimonial-name">Emmanuel Ikenna</div>
+            <div class="testimonial-role">Web Developer — Abuja</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card animate-up">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"I post jobs here for my company's cleaning staff and have never had any issues. The workers are professional and the escrow payment gives peace of mind."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">BM</div>
+          <div>
+            <div class="testimonial-name">Bola Martins</div>
+            <div class="testimonial-role">Business Owner — Port Harcourt</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CTA Banner ────────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="cta-banner">
+      <h2>Ready to Get Started?</h2>
+      <p>Join thousands of Nigerians hiring and earning on NaijaWorks today.</p>
+      <div class="cta-btn-group">
+        <a href="/signup.html?role=client" class="btn btn-white btn-lg">Hire a Worker</a>
+        <a href="/signup.html?role=worker" class="btn btn-outline-white btn-lg">Start Earning</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Footer ────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="nav-logo">
+          <div class="nav-logo-icon">N</div>
+          Naija<span style="color:var(--green-400);">Works</span>
+        </a>
+        <p>Nigeria's trusted hybrid marketplace for hiring local and remote workers. Secure payments, verified workers, real results.</p>
+        <div style="display:flex;gap:12px;margin-top:20px;">
+          <a href="#" style="width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);font-size:1rem;text-decoration:none;" title="Twitter">𝕏</a>
+          <a href="#" style="width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);font-size:1rem;text-decoration:none;" title="Instagram">📷</a>
+          <a href="#" style="width:36px;height:36px;background:rgba(255,255,255,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);font-size:1rem;text-decoration:none;" title="WhatsApp">💬</a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <ul class="footer-links">
+          <li><a href="/browse-workers.html">Find Workers</a></li>
+          <li><a href="/browse-jobs.html">Find Jobs</a></li>
+          <li><a href="/categories.html">All Categories</a></li>
+          <li><a href="/how-it-works.html">How It Works</a></li>
+          <li><a href="/pricing.html">Pricing & VIP</a></li>
+          <li><a href="/fees.html">Fee Schedule</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul class="footer-links">
+          <li><a href="/about.html">About Us</a></li>
+          <li><a href="/contact.html">Contact Us</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Worker Guidelines</a></li>
+          <li><a href="#">Help Center</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Account</h4>
+        <ul class="footer-links">
+          <li><a href="/login.html">Log In</a></li>
+          <li><a href="/signup.html">Sign Up</a></li>
+          <li><a href="/signup.html?role=worker">Become a Worker</a></li>
+          <li><a href="/signup.html?role=client">Post a Job</a></li>
+          <li><a href="/forgot-password.html">Reset Password</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2025 NaijaWorks. All rights reserved. Built in 🇳🇬 Nigeria.</p>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <img src="/images/paystack-badge.png" alt="Secured by Paystack" style="height:24px;opacity:0.5;" onerror="this.style.display='none'" />
+        <span style="font-size:0.8125rem;">Secured by Paystack</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ─── Firebase SDKs ─────────────────────────────────────── -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>
+  firebase.initializeApp(NaijaWorksConfig.firebase);
+</script>
+<script src="/js/main.js"></script>
+
+<script>
+// ── Homepage Logic ──────────────────────────────────────────
+
+// Render categories from config
+function renderCategories() {
+  const physicalEl = document.getElementById('physical-categories');
+  const remoteEl   = document.getElementById('remote-categories');
+
+  NaijaWorksConfig.categories.physical.forEach(cat => {
+    physicalEl.innerHTML += `
+      <a href="/browse-workers.html?category=${cat.id}&type=physical" class="category-card">
+        <div class="category-icon">${cat.icon}</div>
+        <span class="category-label">${cat.label}</span>
+      </a>`;
+  });
+
+  NaijaWorksConfig.categories.remote.forEach(cat => {
+    remoteEl.innerHTML += `
+      <a href="/browse-workers.html?category=${cat.id}&type=remote" class="category-card">
+        <div class="category-icon">${cat.icon}</div>
+        <span class="category-label">${cat.label}</span>
+      </a>`;
+  });
+}
+
+// Switch category tabs
+function switchCategoryTab(type, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`tab-${type}`).classList.add('active');
+}
+
+// Load workers from API
+async function loadFeaturedWorkers() {
+  try {
+    const [nearbyRes, remoteRes] = await Promise.all([
+      fetch('/api/v1/workers?type=physical&limit=4&featured=true'),
+      fetch('/api/v1/workers?type=remote&limit=4&featured=true'),
+    ]);
+
+    const nearbyData  = nearbyRes.ok  ? await nearbyRes.json()  : null;
+    const remoteData  = remoteRes.ok  ? await remoteRes.json()  : null;
+
+    renderWorkersGrid('nearby-workers-grid',  nearbyData?.workers  || []);
+    renderWorkersGrid('remote-workers-grid',  remoteData?.workers  || []);
+  } catch (e) {
+    // Show empty states if API not yet ready
+    renderWorkersGrid('nearby-workers-grid', []);
+    renderWorkersGrid('remote-workers-grid', []);
+  }
+}
+
+function renderWorkersGrid(gridId, workers) {
+  const grid = document.getElementById(gridId);
+  if (!workers.length) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;padding:40px 20px;">
+        <div class="empty-state-icon">👷</div>
+        <div class="empty-state-title">Workers joining soon</div>
+        <div class="empty-state-desc">Be among the first — sign up as a worker today.</div>
+        <a href="/signup.html?role=worker" class="btn btn-primary">Join as a Worker</a>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = workers.map(w => `
+    <a href="/worker-profile.html?uid=${w.uid}" class="worker-card">
+      <div class="worker-card-top">
+        ${w.profilePhoto
+          ? `<img src="${w.profilePhoto}" class="worker-avatar" alt="${w.fullName}" loading="lazy" />`
+          : `<div class="worker-avatar-placeholder">${getInitials(w.fullName)}</div>`}
+        <div class="worker-info">
+          <div class="worker-name">${w.fullName || 'Worker'}${w.isVIP ? ' <span class="badge badge-vip" style="font-size:0.65rem;padding:2px 6px;">VIP</span>' : ''}</div>
+          <div class="worker-title">${w.title || w.serviceCategories?.[0] || 'Service Provider'}</div>
+          <div class="worker-location">📍 ${w.city || w.state || 'Nigeria'}</div>
+        </div>
+      </div>
+      <div class="worker-card-body">
+        <div class="worker-rating">
+          <span class="stars">${'★'.repeat(Math.round(w.ratingAverage || 0))}${'☆'.repeat(5 - Math.round(w.ratingAverage || 0))}</span>
+          <span>${(w.ratingAverage || 0).toFixed(1)}</span>
+          <span class="rating-count">(${w.ratingCount || 0})</span>
+        </div>
+        <div>
+          <span class="worker-price">₦${(w.basePrice || 0).toLocaleString()}</span>
+          <span class="worker-price-label"> starting</span>
+        </div>
+      </div>
+    </a>`).join('');
+}
+
+// Hero search
+function handleHeroSearch() {
+  const query = document.getElementById('hero-search').value.trim();
+  const type  = document.getElementById('hero-search-type')?.value || 'all';
+  if (!query) return;
+  const params = new URLSearchParams({ q: query });
+  if (type !== 'all') params.set('type', type);
+  window.location.href = `/browse-workers.html?${params.toString()}`;
+}
+
+// Allow search on Enter key
+document.getElementById('hero-search')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleHeroSearch();
+});
+
+// How it works grid — make it 4-col on desktop
+const hiwGrid = document.getElementById('hiw-grid');
+if (hiwGrid) {
+  const style = document.createElement('style');
+  style.textContent = `@media(min-width:768px){#hiw-grid{grid-template-columns:repeat(2,1fr);}}\n@media(min-width:1024px){#hiw-grid{grid-template-columns:repeat(4,1fr);}}`;
+  document.head.appendChild(style);
+}
+
+// VIP grid layout
+const vipGrid = document.getElementById('vip-grid');
+if (vipGrid) {
+  const style2 = document.createElement('style');
+  style2.textContent = `@media(min-width:768px){#vip-grid{grid-template-columns:1fr 1fr;}}`;
+  document.head.appendChild(style2);
+}
+
+// Init
+renderCategories();
+loadFeaturedWorkers();
+</script>
+</body>
+</html>

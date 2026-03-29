@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Profile — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user"><div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role" id="sidebar-user-role"></div></div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Edit Profile</span>
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn" id="notif-btn">🔔<span class="notif-dot" id="notif-dot" style="display:none"></span></button>
+      </div>
+    </div>
+    <div class="notif-panel" id="notif-panel"><div class="notif-panel-header">Notifications</div><div class="notif-list"></div></div>
+
+    <div class="dash-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+        <div><div class="page-title">Edit Profile</div><div class="page-subtitle">Keep your profile complete to attract more clients</div></div>
+        <button class="btn btn-primary" id="save-all-btn" onclick="saveAll()">💾 Save All Changes</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr;gap:24px;" id="profile-form-grid">
+
+        <!-- Basic Info -->
+        <div class="card">
+          <div class="card-header"><h3 style="font-size:1rem;">Basic Information</h3></div>
+          <div class="card-body">
+            <!-- Avatar -->
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+              <div id="avatar-preview" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--green-800));display:flex;align-items:center;justify-content:center;color:white;font-size:1.75rem;font-family:var(--font-display);font-weight:800;flex-shrink:0;overflow:hidden;"></div>
+              <div>
+                <label class="btn btn-ghost btn-sm" style="cursor:pointer;">
+                  📷 Change Photo
+                  <input type="file" id="avatar-input" accept="image/*" style="display:none;" onchange="previewAvatar(this)" />
+                </label>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">JPG, PNG or WebP. Max 2MB.</div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label">First Name <span class="required">*</span></label>
+                <input type="text" id="firstName" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name <span class="required">*</span></label>
+                <input type="text" id="lastName" class="form-input" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number <span class="required">*</span></label>
+              <input type="tel" id="phone" class="form-input" placeholder="08012345678" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">WhatsApp Number</label>
+              <input type="tel" id="whatsappNumber" class="form-input" placeholder="Same as phone or different" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bio / About</label>
+              <textarea id="bio" class="form-input" rows="3" placeholder="Tell clients about yourself, your experience, and what makes you great…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location -->
+        <div class="card">
+          <div class="card-header"><h3 style="font-size:1rem;">Location</h3></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label">State <span class="required">*</span></label>
+                <select id="state" class="form-select"><option value="">Select state</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">City / Town</label>
+                <input type="text" id="city" class="form-input" placeholder="e.g. Ikeja" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label">LGA</label>
+                <input type="text" id="lga" class="form-input" placeholder="Local Government Area" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Area / Neighborhood</label>
+                <input type="text" id="area" class="form-input" placeholder="e.g. Surulere" />
+              </div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="detectLocation()" id="detect-loc-btn">📍 Detect My Location</button>
+            <div id="location-detected" style="display:none;margin-top:8px;font-size:0.875rem;color:var(--green-800);background:var(--green-50);padding:8px 12px;border-radius:var(--radius-sm);"></div>
+          </div>
+        </div>
+
+        <!-- Worker-only fields -->
+        <div class="card" id="worker-section" style="display:none;">
+          <div class="card-header"><h3 style="font-size:1rem;">Worker Profile</h3></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Professional Title <span class="required">*</span></label>
+              <input type="text" id="title" class="form-input" placeholder="e.g. Professional Plumber, Full-Stack Developer" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Service Categories</label>
+              <div id="categories-selector" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Skills (comma separated)</label>
+              <input type="text" id="skills" class="form-input" placeholder="e.g. Plumbing, Pipe repair, Bathroom fitting" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Years of Experience</label>
+              <input type="number" id="yearsOfExperience" class="form-input" min="0" max="50" placeholder="e.g. 3" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label">Pricing Model</label>
+                <select id="pricingModel" class="form-select">
+                  <option value="fixed">Fixed Price</option>
+                  <option value="hourly">Hourly Rate</option>
+                  <option value="daily">Daily Rate</option>
+                  <option value="negotiable">Negotiable</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Base / Starting Price (₦)</label>
+                <input type="number" id="basePrice" class="form-input" placeholder="e.g. 15000" min="0" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Minimum Acceptable Price (₦)</label>
+              <input type="number" id="minimumAcceptablePrice" class="form-input" placeholder="Lowest you'll accept" min="0" />
+              <span class="form-hint">Clients offering below this will be shown your minimum.</span>
+            </div>
+            <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px;">
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9375rem;">
+                <input type="checkbox" id="remoteAvailable" style="width:18px;height:18px;accent-color:var(--primary);" />
+                💻 Available for remote work
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9375rem;">
+                <input type="checkbox" id="canTravel" style="width:18px;height:18px;accent-color:var(--primary);" />
+                ✈️ Can travel for jobs
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Publish -->
+        <div class="card" id="publish-section" style="display:none;">
+          <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <div>
+              <div style="font-weight:700;font-family:var(--font-display);margin-bottom:4px;">Profile Status</div>
+              <div id="publish-status" style="font-size:0.875rem;color:var(--text-muted);">Loading…</div>
+            </div>
+            <button class="btn btn-primary" id="publish-btn" onclick="publishProfile()">🚀 Publish Profile</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+let selectedCategories = [];
+
+// Populate states
+const stateSelect = document.getElementById('state');
+NaijaWorksConfig.nigerianStates.forEach(s => { stateSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+
+function previewAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('avatar-preview');
+    preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;" />`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function populateForm(user) {
+  const fields = ['firstName','lastName','phone','whatsappNumber','bio','state','city','lga','area'];
+  fields.forEach(f => { const el = document.getElementById(f); if (el && user[f]) el.value = user[f]; });
+
+  // Avatar
+  const avatarEl = document.getElementById('avatar-preview');
+  if (user.profilePhoto) {
+    avatarEl.innerHTML = `<img src="${user.profilePhoto}" style="width:100%;height:100%;object-fit:cover;" />`;
+  } else {
+    avatarEl.textContent = getInitials(user.fullName);
+  }
+
+  if (user.role === 'worker') {
+    document.getElementById('worker-section').style.display = 'block';
+    document.getElementById('publish-section').style.display = 'block';
+
+    const workerFields = ['title','yearsOfExperience','basePrice','minimumAcceptablePrice'];
+    workerFields.forEach(f => { const el = document.getElementById(f); if (el && user[f] !== undefined) el.value = user[f]; });
+    if (user.pricingModel) document.getElementById('pricingModel').value = user.pricingModel;
+    if (user.remoteAvailable) document.getElementById('remoteAvailable').checked = true;
+    if (user.canTravel)       document.getElementById('canTravel').checked = true;
+    if (user.skills?.length)  document.getElementById('skills').value = user.skills.join(', ');
+
+    // Categories selector
+    selectedCategories = user.serviceCategories || [];
+    buildCategorySelector();
+
+    // Publish status
+    const publishStatus = document.getElementById('publish-status');
+    const publishBtn    = document.getElementById('publish-btn');
+    if (user.profilePublished) {
+      publishStatus.innerHTML = '<span style="color:var(--status-success);font-weight:600;">✅ Profile is live and visible to clients</span>';
+      publishBtn.textContent  = '✏️ Profile is Published';
+      publishBtn.disabled     = true;
+    } else {
+      publishStatus.innerHTML = '<span style="color:var(--status-warning);">⚠️ Profile is not published — clients cannot find you yet</span>';
+    }
+  }
+}
+
+function buildCategorySelector() {
+  const el = document.getElementById('categories-selector');
+  const allCats = [
+    ...NaijaWorksConfig.categories.physical,
+    ...NaijaWorksConfig.categories.remote
+  ];
+  el.innerHTML = allCats.map(c => `
+    <span onclick="toggleCategory('${c.id}', this)"
+      style="padding:6px 12px;border-radius:var(--radius-full);font-size:0.8125rem;font-weight:600;cursor:pointer;border:2px solid;transition:all 0.2s;
+      border-color:${selectedCategories.includes(c.id) ? 'var(--primary)' : 'var(--border)'};
+      background:${selectedCategories.includes(c.id) ? 'var(--green-50)' : 'white'};
+      color:${selectedCategories.includes(c.id) ? 'var(--primary)' : 'var(--text-secondary)'};"
+      data-id="${c.id}">
+      ${c.icon} ${c.label}
+    </span>`).join('');
+}
+
+function toggleCategory(id, el) {
+  if (selectedCategories.includes(id)) {
+    selectedCategories = selectedCategories.filter(c => c !== id);
+    el.style.borderColor = 'var(--border)';
+    el.style.background  = 'white';
+    el.style.color       = 'var(--text-secondary)';
+  } else {
+    if (selectedCategories.length >= 5) { showToast('Maximum 5 categories allowed', 'warning'); return; }
+    selectedCategories.push(id);
+    el.style.borderColor = 'var(--primary)';
+    el.style.background  = 'var(--green-50)';
+    el.style.color       = 'var(--primary)';
+  }
+}
+
+async function detectLocation() {
+  const btn = document.getElementById('detect-loc-btn');
+  setButtonLoading(btn, true, 'Detecting…');
+  try {
+    const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { timeout: 10000 }));
+    const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`, { headers: { 'Accept-Language': 'en' } });
+    const geo  = await resp.json();
+    const addr = geo.address || {};
+    const state = addr.state || '';
+    const city  = addr.city || addr.town || addr.village || '';
+
+    const match = [...document.getElementById('state').options].find(o => state.toLowerCase().includes(o.value.toLowerCase().split(' ')[0]));
+    if (match) document.getElementById('state').value = match.value;
+    if (city)  document.getElementById('city').value  = city;
+
+    const locEl = document.getElementById('location-detected');
+    locEl.style.display = 'block';
+    locEl.textContent   = `📍 Detected: ${city ? city + ', ' : ''}${state}`;
+  } catch(e) {
+    showToast('Location detection failed. Please select manually.', 'warning');
+  } finally { setButtonLoading(btn, false, '📍 Detect My Location'); }
+}
+
+async function saveAll() {
+  const btn = document.getElementById('save-all-btn');
+  setButtonLoading(btn, true, 'Saving…');
+
+  try {
+    const updates = {
+      firstName: document.getElementById('firstName').value.trim(),
+      lastName:  document.getElementById('lastName').value.trim(),
+      phone:     document.getElementById('phone').value.trim(),
+      whatsappNumber: document.getElementById('whatsappNumber').value.trim(),
+      bio:       document.getElementById('bio').value.trim(),
+      state:     document.getElementById('state').value,
+      city:      document.getElementById('city').value.trim(),
+      lga:       document.getElementById('lga').value.trim(),
+      area:      document.getElementById('area').value.trim(),
+    };
+
+    if (!updates.firstName || !updates.lastName || !updates.phone) {
+      showToast('Name and phone are required', 'warning');
+      setButtonLoading(btn, false);
+      return;
+    }
+
+    if (dashUser.role === 'worker') {
+      Object.assign(updates, {
+        title:                    document.getElementById('title').value.trim(),
+        serviceCategories:        selectedCategories,
+        skills:                   document.getElementById('skills').value.split(',').map(s=>s.trim()).filter(Boolean),
+        yearsOfExperience:        parseInt(document.getElementById('yearsOfExperience').value) || 0,
+        pricingModel:             document.getElementById('pricingModel').value,
+        basePrice:                parseFloat(document.getElementById('basePrice').value) || 0,
+        minimumAcceptablePrice:   parseFloat(document.getElementById('minimumAcceptablePrice').value) || 0,
+        remoteAvailable:          document.getElementById('remoteAvailable').checked,
+        canTravel:                document.getElementById('canTravel').checked,
+      });
+    }
+
+    // Upload avatar if changed
+    const avatarFile = document.getElementById('avatar-input').files[0];
+    if (avatarFile) {
+      const formData = new FormData();
+      formData.append('avatar', avatarFile);
+      const token = await getAuthToken();
+      const uploadRes = await fetch('/api/v1/uploads/avatar', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
+      const uploadData = await uploadRes.json();
+      if (uploadData.url) updates.profilePhoto = uploadData.url;
+    }
+
+    await api.put('/api/v1/workers/me', updates);
+    showToast('Profile saved successfully!', 'success', 'Saved');
+    setButtonLoading(btn, false);
+
+    // Refresh dashUser
+    dashUser = { ...dashUser, ...updates };
+    renderSidebarUser();
+  } catch(e) {
+    showToast(e.message || 'Save failed', 'error');
+    setButtonLoading(btn, false);
+  }
+}
+
+async function publishProfile() {
+  const btn = document.getElementById('publish-btn');
+  setButtonLoading(btn, true, 'Publishing…');
+  try {
+    await api.post('/api/v1/workers/me/publish', {});
+    showToast('Profile is now live! Clients can find you.', 'success');
+    document.getElementById('publish-status').innerHTML = '<span style="color:var(--status-success);font-weight:600;">✅ Profile is live and visible to clients</span>';
+    btn.textContent = '✅ Published';
+    btn.disabled = true;
+  } catch(e) {
+    showToast(e.message || 'Publish failed. Complete your profile first.', 'error');
+    setButtonLoading(btn, false);
+  }
+}
+
+(async () => {
+  await initDashboard();
+
+  // Build sidebar
+  const nav = document.getElementById('sidebar-nav');
+  const base = dashUser.role === 'worker' ? '/worker-dashboard.html' : '/client-dashboard.html';
+  nav.innerHTML = `
+    <a href="${base}" class="sidebar-link"><span class="icon">🏠</span>Dashboard</a>
+    ${dashUser.role === 'worker' ? '<a href="/worker-profile.html?uid=' + dashUser.uid + '" class="sidebar-link"><span class="icon">👤</span>View Profile</a>' : ''}
+    <a href="/edit-profile.html" class="sidebar-link active"><span class="icon">⚙️</span>Edit Profile</a>`;
+
+  populateForm(dashUser);
+})();
+</script>
+</body>
+</html>

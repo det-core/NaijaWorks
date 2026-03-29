@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go VIP — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav">
+      <a href="/worker-dashboard.html" class="sidebar-link"><span class="icon">🏠</span>Dashboard</a>
+      <a href="/wallet.html" class="sidebar-link"><span class="icon">💰</span>Wallet</a>
+      <a href="/vip-upgrade.html" class="sidebar-link active"><span class="icon">⭐</span>Go VIP</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user"><div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role" id="sidebar-user-role"></div></div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Go VIP</span>
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn" id="notif-btn">🔔<span class="notif-dot" id="notif-dot" style="display:none"></span></button>
+      </div>
+    </div>
+    <div class="notif-panel" id="notif-panel"><div class="notif-panel-header">Notifications</div><div class="notif-list"></div></div>
+
+    <div class="dash-content">
+      <!-- Already VIP banner -->
+      <div id="already-vip" style="display:none;background:linear-gradient(135deg,var(--charcoal-900),var(--green-900));border-radius:var(--radius-xl);padding:32px;color:white;text-align:center;margin-bottom:24px;">
+        <div style="font-size:2.5rem;margin-bottom:12px;">⭐</div>
+        <h2 style="color:white;margin-bottom:8px;">You're a VIP Member!</h2>
+        <p style="color:rgba(255,255,255,0.65);margin-bottom:16px;">Your VIP is active until <strong id="vip-expire-date" style="color:var(--green-400);">—</strong></p>
+        <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+          <div style="background:rgba(255,255,255,0.08);border-radius:var(--radius-md);padding:12px 20px;">
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);">Your Commission</div>
+            <div style="font-size:1.5rem;font-weight:800;font-family:var(--font-display);color:var(--green-400);">7%</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.08);border-radius:var(--radius-md);padding:12px 20px;">
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);">Standard Rate</div>
+            <div style="font-size:1.5rem;font-weight:800;font-family:var(--font-display);color:rgba(255,255,255,0.5);">20%</div>
+          </div>
+        </div>
+        <button onclick="initiateVIPPayment()" class="btn btn-lg" style="background:#f59e0b;color:white;border:none;margin-top:20px;">🔄 Renew VIP (₦9,500)</button>
+      </div>
+
+      <!-- Not VIP -->
+      <div id="not-vip">
+        <div style="text-align:center;margin-bottom:40px;">
+          <div style="font-size:3rem;margin-bottom:12px;">⭐</div>
+          <h1 style="font-size:clamp(1.75rem,3vw,2.25rem);margin-bottom:8px;">Unlock NaijaWorks VIP</h1>
+          <p style="color:var(--text-secondary);font-size:1.0625rem;max-width:480px;margin:0 auto;">Pay just 7% commission instead of 20% and keep significantly more of every naira you earn.</p>
+        </div>
+
+        <div style="max-width:480px;margin:0 auto;">
+          <div class="vip-card" style="margin-bottom:24px;">
+            <div class="vip-badge">⭐ NaijaWorks VIP — Weekly</div>
+            <div class="vip-price">₦9,500 <span class="vip-price-period">/ week</span></div>
+            <ul class="vip-features">
+              <li>Commission drops from 20% to just 7%</li>
+              <li>VIP / Pro badge on your profile</li>
+              <li>Priority placement in search results</li>
+              <li>Boosted profile visibility & ranking</li>
+              <li>Unlimited job offers</li>
+              <li>Higher client trust signals</li>
+            </ul>
+            <button onclick="initiateVIPPayment()" class="btn btn-lg btn-full" id="vip-pay-btn" style="background:#f59e0b;color:white;border:none;margin-top:8px;">
+              ⭐ Subscribe to VIP — ₦9,500/week
+            </button>
+          </div>
+
+          <!-- Savings comparison -->
+          <div style="background:var(--charcoal-50);border-radius:var(--radius-lg);padding:24px;">
+            <h3 style="font-size:1rem;margin-bottom:16px;text-align:center;">💰 How Much More You Keep</h3>
+            <div class="form-group">
+              <label class="form-label">Your monthly earnings (₦)</label>
+              <input type="number" id="vip-calc" class="form-input" value="150000" oninput="calcVIPSavings()" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
+              <div style="background:white;border-radius:var(--radius-md);padding:14px;text-align:center;border:1px solid var(--border);">
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">Without VIP (20%)</div>
+                <div id="calc-no-vip" style="font-size:1.25rem;font-weight:800;font-family:var(--font-display);">₦120,000</div>
+              </div>
+              <div style="background:var(--charcoal-900);border-radius:var(--radius-md);padding:14px;text-align:center;">
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-bottom:4px;">With VIP (7%)</div>
+                <div id="calc-with-vip" style="font-size:1.25rem;font-weight:800;font-family:var(--font-display);color:#4ade80;">₦139,500</div>
+              </div>
+            </div>
+            <div id="calc-msg" style="text-align:center;margin-top:12px;font-size:0.875rem;font-weight:600;color:var(--primary);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+function calcVIPSavings() {
+  const income = parseFloat(document.getElementById('vip-calc').value) || 0;
+  const noVip  = income * 0.80;
+  const withVip= income * 0.93;
+  const saved  = withVip - noVip - 9500;
+  document.getElementById('calc-no-vip').textContent  = formatNaira(Math.round(noVip));
+  document.getElementById('calc-with-vip').textContent= formatNaira(Math.round(withVip));
+  document.getElementById('calc-msg').textContent = saved > 0
+    ? `Net extra: +${formatNaira(Math.round(saved))} after VIP fee ✓`
+    : 'VIP pays for itself once you earn over ₦65,000/month';
+}
+
+async function initiateVIPPayment() {
+  const btn = document.getElementById('vip-pay-btn');
+  if (btn) setButtonLoading(btn, true, 'Connecting to Paystack…');
+  try {
+    const data = await api.post('/api/v1/vip/subscribe', {});
+    if (data.authorizationUrl) window.location.href = data.authorizationUrl;
+  } catch(e) {
+    showToast(e.message || 'Payment failed', 'error');
+    if (btn) setButtonLoading(btn, false);
+  }
+}
+
+(async () => {
+  await initDashboard('worker');
+  calcVIPSavings();
+
+  // Check VIP status
+  const now = new Date();
+  const vipEnd = dashUser.vipEndDate?.toDate ? dashUser.vipEndDate.toDate() : dashUser.vipEndDate ? new Date(dashUser.vipEndDate) : null;
+  if (dashUser.isVIP && vipEnd && vipEnd > now) {
+    document.getElementById('already-vip').style.display = 'block';
+    document.getElementById('not-vip').style.display = 'none';
+    document.getElementById('vip-expire-date').textContent = vipEnd.toLocaleDateString('en-NG', { dateStyle: 'long' });
+  }
+})();
+</script>
+</body>
+</html>

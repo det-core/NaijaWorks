@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Withdrawals — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav">
+      <a href="/worker-dashboard.html" class="sidebar-link"><span class="icon">🏠</span>Dashboard</a>
+      <a href="/wallet.html" class="sidebar-link"><span class="icon">💰</span>Wallet</a>
+      <a href="/withdrawals.html" class="sidebar-link active"><span class="icon">🏦</span>Withdrawals</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+      <div class="sidebar-user-name" id="sidebar-user-name" style="display:none;"></div>
+      <div class="sidebar-user-role" id="sidebar-user-role" style="display:none;"></div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Withdrawals</span>
+      </div>
+      <div class="topbar-right">
+        <a href="/wallet.html" class="btn btn-primary btn-sm">+ New Withdrawal</a>
+      </div>
+    </div>
+
+    <div class="dash-content">
+      <div class="page-title">Withdrawal History</div>
+      <div class="page-subtitle">All your withdrawal requests and their statuses</div>
+
+      <div class="card">
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Fee</th>
+                <th>You Receive</th>
+                <th>Bank</th>
+                <th>Account</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="withdrawals-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);"><div class="spinner dark" style="margin:0 auto 12px;"></div>Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Fee schedule reminder -->
+      <div class="card" style="margin-top:24px;padding:20px 24px;">
+        <h4 style="margin-bottom:12px;">📋 Withdrawal Fee Schedule</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+          <div style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:10px 14px;font-size:0.875rem;">
+            <div style="color:var(--text-muted);">₦10,000 – ₦15,000</div>
+            <div style="font-weight:700;">₦500 fee</div>
+          </div>
+          <div style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:10px 14px;font-size:0.875rem;">
+            <div style="color:var(--text-muted);">₦15,001 – ₦20,000</div>
+            <div style="font-weight:700;">₦700 fee</div>
+          </div>
+          <div style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:10px 14px;font-size:0.875rem;">
+            <div style="color:var(--text-muted);">₦20,001 – ₦25,000</div>
+            <div style="font-weight:700;">₦1,000 fee</div>
+          </div>
+          <div style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:10px 14px;font-size:0.875rem;">
+            <div style="color:var(--text-muted);">₦25,001 – ₦30,000</div>
+            <div style="font-weight:700;">₦1,650 fee</div>
+          </div>
+        </div>
+        <div style="font-size:0.8125rem;color:var(--text-muted);margin-top:12px;">Processing time: 24–48 hours. Up to 3 business days during bank holidays or high volume periods.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+(async () => {
+  await initDashboard('worker');
+
+  const statusStyles = {
+    pending: 'status-pending', completed: 'status-completed',
+    failed: 'status-cancelled', processing: 'status-funded'
+  };
+
+  await loadTableData('/api/v1/withdrawals', 'withdrawals-tbody', (w) => `
+    <tr>
+      <td>${formatDate(w.requestedAt)}</td>
+      <td style="font-weight:700;">${formatNaira(w.amount)}</td>
+      <td style="color:var(--status-error);">-${formatNaira(w.fee)}</td>
+      <td style="font-weight:700;color:var(--status-success);">${formatNaira(w.netAmount)}</td>
+      <td>${w.bankName || '—'}</td>
+      <td style="font-family:monospace;">****${(w.accountNumber||'').slice(-4)}</td>
+      <td><span class="status-pill ${statusStyles[w.status] || 'status-draft'}">${w.status}</span></td>
+    </tr>`, 'No withdrawals yet. <a href="/wallet.html" style="color:var(--primary);font-weight:600;">Withdraw from wallet →</a>');
+})();
+</script>
+</body>
+</html>

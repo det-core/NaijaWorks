@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contracts — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav" id="sidebar-nav-links"></nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user"><div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role" id="sidebar-user-role"></div></div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Contracts</span>
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn" id="notif-btn">🔔<span class="notif-dot" id="notif-dot" style="display:none"></span></button>
+      </div>
+    </div>
+    <div class="notif-panel" id="notif-panel"><div class="notif-panel-header">Notifications</div><div class="notif-list"></div></div>
+
+    <div class="dash-content">
+      <div class="page-title">Contracts</div>
+      <div class="page-subtitle">Track and manage your active and past contracts</div>
+
+      <div class="tab-bar" style="margin-bottom:24px;">
+        <button class="tab-btn active" onclick="switchTab('all',this)">All</button>
+        <button class="tab-btn" onclick="switchTab('awaiting_payment',this)">Awaiting Payment</button>
+        <button class="tab-btn" onclick="switchTab('active',this)">Active</button>
+        <button class="tab-btn" onclick="switchTab('work_done',this)">Work Done</button>
+        <button class="tab-btn" onclick="switchTab('completed',this)">Completed</button>
+        <button class="tab-btn" onclick="switchTab('dispute',this)">Dispute</button>
+      </div>
+
+      <div id="contracts-list" style="display:flex;flex-direction:column;gap:16px;"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Contract Detail Modal -->
+<div class="overlay" id="contract-modal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-header">
+      <span class="modal-title" id="contract-modal-title">Contract Details</span>
+      <button class="modal-close" onclick="closeModal('contract-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="contract-modal-body"></div>
+    <div class="modal-footer" id="contract-modal-footer"></div>
+  </div>
+</div>
+
+<!-- Dispute Modal -->
+<div class="overlay" id="dispute-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Raise a Dispute</span>
+      <button class="modal-close" onclick="closeModal('dispute-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--status-warning-bg);border:1px solid #fcd34d;border-radius:var(--radius-md);padding:12px 16px;margin-bottom:16px;font-size:0.875rem;">
+        ⚠️ Only raise a dispute if you genuinely cannot resolve the issue with the other party. Our admin team will review within 48 hours.
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason for Dispute <span class="required">*</span></label>
+        <textarea id="dispute-reason" class="form-input" rows="4" placeholder="Describe the issue clearly…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Evidence (links or description)</label>
+        <textarea id="dispute-evidence" class="form-input" rows="2" placeholder="Screenshots, messages, proof of work…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('dispute-modal')">Cancel</button>
+      <button class="btn btn-primary" style="background:var(--status-error);border-color:var(--status-error);" id="submit-dispute-btn" onclick="submitDispute()">Submit Dispute</button>
+    </div>
+  </div>
+</div>
+
+<!-- Review Modal -->
+<div class="overlay" id="review-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Leave a Review</span>
+      <button class="modal-close" onclick="closeModal('review-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Rating <span class="required">*</span></label>
+        <div id="star-rating" style="display:flex;gap:8px;font-size:2rem;cursor:pointer;margin-bottom:4px;">
+          <span onclick="setRating(1)" data-star="1">☆</span>
+          <span onclick="setRating(2)" data-star="2">☆</span>
+          <span onclick="setRating(3)" data-star="3">☆</span>
+          <span onclick="setRating(4)" data-star="4">☆</span>
+          <span onclick="setRating(5)" data-star="5">☆</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Review</label>
+        <textarea id="review-text" class="form-input" rows="3" placeholder="Share your experience…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('review-modal')">Cancel</button>
+      <button class="btn btn-primary" id="submit-review-btn" onclick="submitReview()">Submit Review</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+let currentTab = 'all';
+let activeContractId = null;
+let activeContractData = null;
+let selectedRating = 0;
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function switchTab(status, btn) {
+  currentTab = status;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadContracts();
+}
+
+function buildSidebarLinks(role) {
+  const nav = document.getElementById('sidebar-nav-links');
+  const base = role === 'worker' ? '/worker-dashboard.html' : '/client-dashboard.html';
+  nav.innerHTML = `
+    <a href="${base}" class="sidebar-link"><span class="icon">🏠</span>Dashboard</a>
+    <a href="/offers.html" class="sidebar-link"><span class="icon">🤝</span>Offers</a>
+    <a href="/contracts.html" class="sidebar-link active"><span class="icon">📄</span>Contracts</a>
+    ${role === 'worker' ? '<a href="/wallet.html" class="sidebar-link"><span class="icon">💰</span>Wallet</a>' : ''}
+    ${role === 'client' ? '<a href="/browse-workers.html" class="sidebar-link"><span class="icon">🔍</span>Find Workers</a>' : ''}`;
+}
+
+async function loadContracts() {
+  const listEl = document.getElementById('contracts-list');
+  listEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);"><div class="spinner dark" style="margin:0 auto 12px;"></div>Loading…</div>`;
+  try {
+    const token = await getAuthToken();
+    const role  = dashUser.role;
+    const status = currentTab === 'all' ? '' : currentTab;
+    const res = await fetch(`/api/v1/contracts?role=${role}${status ? '&status=' + status : ''}&limit=30`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const contracts = data.contracts || [];
+
+    if (!contracts.length) {
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📄</div>
+        <div class="empty-state-title">No contracts${currentTab !== 'all' ? ' (' + currentTab.replace('_',' ') + ')' : ''}</div>
+        <div class="empty-state-desc">${role === 'client' ? 'Browse workers and make an offer to create a contract.' : 'Accept an offer to create your first contract.'}</div>
+        <a href="${role === 'client' ? '/browse-workers.html' : '/offers.html'}" class="btn btn-primary">${role === 'client' ? 'Find Workers' : 'View Offers'}</a>
+      </div>`;
+      return;
+    }
+
+    listEl.innerHTML = contracts.map(c => renderContractCard(c)).join('');
+  } catch(e) {
+    listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Failed to load</div><button class="btn btn-ghost" onclick="loadContracts()">Retry</button></div>`;
+  }
+}
+
+function renderContractCard(c) {
+  const isClient = dashUser.role === 'client';
+  const other = isClient ? c.workerName : c.clientName;
+  const statusMap = {
+    awaiting_payment: 'status-pending', active: 'status-funded',
+    work_done: 'status-info', completed: 'status-completed',
+    dispute: 'status-dispute', cancelled: 'status-cancelled'
+  };
+
+  return `<div class="card">
+    <div style="padding:20px 24px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+        <div>
+          <div style="font-weight:700;font-size:1.0625rem;font-family:var(--font-display);">${c.jobTitle}</div>
+          <div style="font-size:0.875rem;color:var(--text-muted);margin-top:2px;">${isClient ? '👷' : '👤'} ${other}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:1.25rem;font-weight:800;font-family:var(--font-display);color:var(--primary);">${formatNaira(c.agreedPrice)}</div>
+          <span class="status-pill ${statusMap[c.contractStatus] || 'status-draft'}">${c.contractStatus.replace('_',' ')}</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:0.8125rem;color:var(--text-muted);">
+        <span>📅 ${timeAgo(c.createdAt)}</span>
+        ${c.workMode ? `<span>${c.workMode === 'remote' ? '💻 Remote' : '📍 Physical'}</span>` : ''}
+        ${c.duration ? `<span>⏱ ${c.duration}</span>` : ''}
+        <span>Commission: ${Math.round((c.commissionRateAtCreation || 0.20) * 100)}%</span>
+      </div>
+    </div>
+    <div style="padding:12px 24px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="viewContract('${c.id}')">View Details</button>
+      ${renderContractQuickActions(c)}
+    </div>
+  </div>`;
+}
+
+function renderContractQuickActions(c) {
+  const isClient = dashUser.role === 'client';
+  const actions = [];
+
+  if (c.contractStatus === 'awaiting_payment' && isClient) {
+    actions.push(`<button class="btn btn-primary btn-sm" onclick="payContract('${c.id}','${c.agreedPrice}')">💳 Pay Now — ${formatNaira(c.agreedPrice)}</button>`);
+  }
+  if (c.contractStatus === 'active' && !isClient) {
+    actions.push(`<button class="btn btn-secondary btn-sm" onclick="markDone('${c.id}')">✅ Mark Work Done</button>`);
+  }
+  if (c.contractStatus === 'work_done' && isClient) {
+    actions.push(`<button class="btn btn-primary btn-sm" onclick="confirmComplete('${c.id}')">🎉 Confirm & Release Payment</button>`);
+  }
+  if (c.contractStatus === 'completed') {
+    actions.push(`<button class="btn btn-ghost btn-sm" onclick="openReviewModal('${c.id}','${isClient ? c.workerId : c.clientId}')">⭐ Leave Review</button>`);
+  }
+  if (['active','work_done'].includes(c.contractStatus)) {
+    actions.push(`<button class="btn btn-ghost btn-sm" style="color:var(--status-error);" onclick="openDisputeModal('${c.id}')">⚠️ Dispute</button>`);
+  }
+  return actions.join('');
+}
+
+async function viewContract(id) {
+  openModal('contract-modal');
+  document.getElementById('contract-modal-body').innerHTML = `<div style="text-align:center;padding:32px;"><div class="spinner dark" style="margin:0 auto;"></div></div>`;
+  document.getElementById('contract-modal-footer').innerHTML = '';
+
+  try {
+    const token = await getAuthToken();
+    const res = await fetch(`/api/v1/contracts/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const data = await res.json();
+    const c = data.contract;
+    const contact = data.contactInfo;
+    activeContractData = c;
+
+    document.getElementById('contract-modal-title').textContent = c.jobTitle;
+
+    const isClient = dashUser.role === 'client';
+    document.getElementById('contract-modal-body').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:12px;">
+          <div style="font-size:0.75rem;color:var(--text-muted);">Agreed Price</div>
+          <div style="font-weight:800;font-size:1.25rem;font-family:var(--font-display);color:var(--primary);">${formatNaira(c.agreedPrice)}</div>
+        </div>
+        <div style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:12px;">
+          <div style="font-size:0.75rem;color:var(--text-muted);">Status</div>
+          <span class="status-pill status-${c.contractStatus === 'completed' ? 'completed' : c.contractStatus === 'active' ? 'funded' : 'pending'}">${c.contractStatus.replace('_',' ')}</span>
+        </div>
+        ${!isClient ? `
+        <div style="background:var(--green-50);border-radius:var(--radius-md);padding:12px;">
+          <div style="font-size:0.75rem;color:var(--green-700);">You Receive (after ${Math.round(c.commissionRateAtCreation*100)}% commission)</div>
+          <div style="font-weight:800;font-size:1.125rem;font-family:var(--font-display);color:var(--green-800);">${formatNaira(c.workerNetAmount)}</div>
+        </div>
+        <div style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:12px;">
+          <div style="font-size:0.75rem;color:var(--text-muted);">Platform Commission</div>
+          <div style="font-weight:700;font-size:1rem;font-family:var(--font-display);">${formatNaira(c.platformCommissionAmount)}</div>
+        </div>` : ''}
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Job Description</div>
+        <p style="font-size:0.9375rem;line-height:1.7;color:var(--text-secondary);">${c.jobDescription || '—'}</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;font-size:0.875rem;">
+        ${c.duration ? `<div><span style="color:var(--text-muted);">Duration:</span> ${c.duration}</div>` : ''}
+        ${c.workMode ? `<div><span style="color:var(--text-muted);">Work Mode:</span> ${c.workMode}</div>` : ''}
+        ${c.location ? `<div><span style="color:var(--text-muted);">Location:</span> ${c.location}</div>` : ''}
+        <div><span style="color:var(--text-muted);">Created:</span> ${formatDate(c.createdAt)}</div>
+        ${c.fundedAt ? `<div><span style="color:var(--text-muted);">Funded:</span> ${formatDate(c.fundedAt)}</div>` : ''}
+        ${c.completedAt ? `<div><span style="color:var(--text-muted);">Completed:</span> ${formatDate(c.completedAt)}</div>` : ''}
+      </div>
+
+      ${contact ? `
+      <div style="background:var(--green-50);border:1px solid var(--green-300);border-radius:var(--radius-md);padding:14px 16px;">
+        <div style="font-size:0.8rem;font-weight:700;color:var(--green-800);margin-bottom:8px;">🔓 Contact Information (Unlocked)</div>
+        <div style="font-size:0.875rem;display:flex;flex-direction:column;gap:6px;color:var(--green-900);">
+          ${contact.phone ? `<div>📞 <strong>Phone:</strong> ${contact.phone}</div>` : ''}
+          ${contact.whatsappNumber ? `<div>💬 <strong>WhatsApp:</strong> ${contact.whatsappNumber}</div>` : ''}
+          ${contact.email ? `<div>📧 <strong>Email:</strong> ${contact.email}</div>` : ''}
+          ${contact.telegramUsername ? `<div>✈️ <strong>Telegram:</strong> @${contact.telegramUsername}</div>` : ''}
+        </div>
+      </div>` : (c.paymentStatus !== 'funded' ? `
+      <div style="background:var(--charcoal-50);border:2px dashed var(--border);border-radius:var(--radius-md);padding:16px;text-align:center;">
+        <div style="font-size:1.25rem;margin-bottom:8px;">🔒</div>
+        <div style="font-weight:600;font-size:0.9rem;">Contact details locked</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);">Fund the contract to reveal contact information.</div>
+      </div>` : '')}`;
+
+    // Footer actions
+    const footerActions = [];
+    if (c.contractStatus === 'awaiting_payment' && isClient) {
+      footerActions.push(`<button class="btn btn-primary" onclick="closeModal('contract-modal');payContract('${c.id}','${c.agreedPrice}')">💳 Pay ${formatNaira(c.agreedPrice)} Now</button>`);
+    }
+    if (c.contractStatus === 'active' && dashUser.role === 'worker') {
+      footerActions.push(`<button class="btn btn-secondary" onclick="closeModal('contract-modal');markDone('${c.id}')">✅ Mark Work Done</button>`);
+    }
+    if (c.contractStatus === 'work_done' && isClient) {
+      footerActions.push(`<button class="btn btn-primary" onclick="closeModal('contract-modal');confirmComplete('${c.id}')">🎉 Confirm & Release Payment</button>`);
+    }
+    document.getElementById('contract-modal-footer').innerHTML =
+      `<button class="btn btn-ghost" onclick="closeModal('contract-modal')">Close</button>${footerActions.join('')}`;
+
+  } catch(e) {
+    document.getElementById('contract-modal-body').innerHTML = `<div style="text-align:center;padding:24px;color:var(--status-error);">Failed to load contract details.</div>`;
+  }
+}
+
+async function payContract(contractId, amount) {
+  if (!confirm(`Pay ${formatNaira(parseFloat(amount))} via Paystack to fund this contract?`)) return;
+  try {
+    const data = await api.post('/api/v1/payments/initialize-job', { contractId });
+    if (data.authorizationUrl) {
+      window.location.href = data.authorizationUrl;
+    }
+  } catch(e) { showToast(e.message || 'Payment initialization failed', 'error'); }
+}
+
+async function markDone(contractId) {
+  if (!confirm('Mark work as done? The client will be notified to review and release payment.')) return;
+  try {
+    const data = await api.patch(`/api/v1/contracts/${contractId}/mark-done`, {});
+    showToast('Work marked as done! Awaiting client confirmation.', 'success');
+    loadContracts();
+  } catch(e) { showToast(e.message || 'Failed', 'error'); }
+}
+
+async function confirmComplete(contractId) {
+  if (!confirm('Confirm work is complete and release payment to the worker? This cannot be undone.')) return;
+  try {
+    const data = await api.patch(`/api/v1/contracts/${contractId}/complete`, {});
+    showToast(`Payment released! Worker has been paid ${formatNaira(data.workerNetAmount)}.`, 'success');
+    loadContracts();
+  } catch(e) { showToast(e.message || 'Failed', 'error'); }
+}
+
+function openDisputeModal(contractId) {
+  activeContractId = contractId;
+  document.getElementById('dispute-reason').value = '';
+  document.getElementById('dispute-evidence').value = '';
+  openModal('dispute-modal');
+}
+
+async function submitDispute() {
+  const reason   = document.getElementById('dispute-reason').value.trim();
+  const evidence = document.getElementById('dispute-evidence').value.trim();
+  if (!reason) { showToast('Please describe the issue', 'warning'); return; }
+  const btn = document.getElementById('submit-dispute-btn');
+  setButtonLoading(btn, true, 'Submitting…');
+  try {
+    await api.patch(`/api/v1/contracts/${activeContractId}/dispute`, { reason, evidence });
+    closeModal('dispute-modal');
+    showToast('Dispute submitted. Admin will review within 48 hours.', 'info');
+    loadContracts();
+  } catch(e) { showToast(e.message || 'Failed', 'error'); setButtonLoading(btn, false); }
+}
+
+function openReviewModal(contractId, toUserId) {
+  activeContractId = contractId;
+  activeContractData = { toUserId };
+  selectedRating = 0;
+  document.querySelectorAll('#star-rating span').forEach(s => s.textContent = '☆');
+  document.getElementById('review-text').value = '';
+  openModal('review-modal');
+}
+
+function setRating(r) {
+  selectedRating = r;
+  document.querySelectorAll('#star-rating span').forEach((s, i) => {
+    s.textContent = i < r ? '★' : '☆';
+    s.style.color = i < r ? '#f59e0b' : 'var(--text-muted)';
+  });
+}
+
+async function submitReview() {
+  if (!selectedRating) { showToast('Please select a rating', 'warning'); return; }
+  const btn = document.getElementById('submit-review-btn');
+  setButtonLoading(btn, true, 'Submitting…');
+  try {
+    await api.post('/api/v1/reviews', {
+      contractId: activeContractId,
+      toUserId: activeContractData.toUserId,
+      rating: selectedRating,
+      reviewText: document.getElementById('review-text').value.trim(),
+    });
+    closeModal('review-modal');
+    showToast('Review submitted! Thank you.', 'success');
+  } catch(e) { showToast(e.message || 'Failed', 'error'); setButtonLoading(btn, false); }
+}
+
+(async () => {
+  await initDashboard();
+  buildSidebarLinks(dashUser.role);
+
+  // Check for direct contract link
+  const urlId = new URLSearchParams(window.location.search).get('id');
+  if (urlId) { setTimeout(() => viewContract(urlId), 500); }
+
+  loadContracts();
+})();
+</script>
+</body>
+</html>

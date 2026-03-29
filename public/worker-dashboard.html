@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Worker Dashboard — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- Sidebar -->
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="/worker-dashboard.html" class="sidebar-link active"><span class="icon">🏠</span>Dashboard</a>
+      <a href="/worker-profile.html"   class="sidebar-link"><span class="icon">👤</span>My Profile</a>
+      <a href="/worker-jobs.html"      class="sidebar-link"><span class="icon">💼</span>My Jobs</a>
+      <a href="/offers.html"           class="sidebar-link"><span class="icon">🤝</span>Offers <span class="sidebar-badge" id="offers-badge" style="display:none">0</span></a>
+      <a href="/contracts.html"        class="sidebar-link"><span class="icon">📄</span>Contracts</a>
+      <div class="sidebar-section-label">Earnings</div>
+      <a href="/wallet.html"           class="sidebar-link"><span class="icon">💰</span>Wallet</a>
+      <a href="/withdrawals.html"      class="sidebar-link"><span class="icon">🏦</span>Withdrawals</a>
+      <a href="/vip-upgrade.html"      class="sidebar-link"><span class="icon">⭐</span>Go VIP</a>
+      <div class="sidebar-section-label">Account</div>
+      <a href="/reviews.html"          class="sidebar-link"><span class="icon">⭐</span>Reviews</a>
+      <a href="/notifications.html"    class="sidebar-link"><span class="icon">🔔</span>Notifications</a>
+      <a href="/edit-profile.html"     class="sidebar-link"><span class="icon">⚙️</span>Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div>
+          <div class="sidebar-user-name" id="sidebar-user-name">Loading…</div>
+          <div class="sidebar-user-role" id="sidebar-user-role">Worker</div>
+        </div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Main -->
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <span style="font-size:0.875rem;color:var(--text-muted);">Hi, <strong id="topbar-username"></strong></span>
+        <button class="notif-btn" id="notif-btn">🔔<span class="notif-dot" id="notif-dot" style="display:none"></span></button>
+      </div>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="notif-panel" id="notif-panel">
+      <div class="notif-panel-header">
+        Notifications
+        <button onclick="markAllRead()" style="background:none;border:none;font-size:0.8rem;color:var(--primary);cursor:pointer;font-weight:600;">Mark all read</button>
+      </div>
+      <div class="notif-list"></div>
+    </div>
+
+    <div class="dash-content">
+      <!-- VIP Banner -->
+      <div id="vip-banner" style="display:none;background:linear-gradient(135deg,var(--charcoal-900),var(--green-900));border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;">⭐ VIP Active until</div>
+          <div style="color:white;font-weight:700;font-family:var(--font-display);" id="vip-end-date">—</div>
+        </div>
+        <div style="color:var(--green-400);font-size:0.875rem;font-weight:600;">7% commission rate active ✓</div>
+        <a href="/vip-upgrade.html" class="btn btn-sm" style="background:#f59e0b;color:white;border:none;">Renew VIP</a>
+      </div>
+
+      <!-- Profile Completion -->
+      <div id="profile-completion-banner" style="display:none;background:var(--status-warning-bg);border:1px solid #fcd34d;border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-weight:700;color:#92400e;font-family:var(--font-display);">⚠️ Complete Your Profile</div>
+            <div style="font-size:0.875rem;color:#b45309;margin-top:2px;">A complete profile gets 3x more job offers.</div>
+          </div>
+          <a href="/edit-profile.html" class="btn btn-sm" style="background:#f59e0b;color:white;border:none;">Complete Profile</a>
+        </div>
+        <div style="margin-top:12px;background:#fde68a;border-radius:4px;height:8px;overflow:hidden;">
+          <div id="profile-bar" style="height:100%;background:#f59e0b;border-radius:4px;transition:width 0.5s;width:0%;"></div>
+        </div>
+        <div style="font-size:0.75rem;color:#92400e;margin-top:4px;"><span id="profile-pct">0</span>% complete</div>
+      </div>
+
+      <div class="page-title">Worker Dashboard</div>
+      <div class="page-subtitle" id="dash-greeting">Welcome back!</div>
+
+      <!-- Wallet Stats -->
+      <div class="stats-grid" id="wallet-stats">
+        <div class="stat-card"><div class="skeleton" style="height:80px;"></div></div>
+        <div class="stat-card"><div class="skeleton" style="height:80px;"></div></div>
+        <div class="stat-card"><div class="skeleton" style="height:80px;"></div></div>
+        <div class="stat-card"><div class="skeleton" style="height:80px;"></div></div>
+      </div>
+
+      <!-- Job Stats -->
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);" id="job-stats">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dbeafe;">💼</div>
+          <div class="stat-label">Active Jobs</div>
+          <div class="stat-value" id="stat-active-jobs">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dcfce7;">✅</div>
+          <div class="stat-label">Completed</div>
+          <div class="stat-value" id="stat-completed">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fef9c3;">⭐</div>
+          <div class="stat-label">Rating</div>
+          <div class="stat-value" id="stat-rating">—</div>
+        </div>
+      </div>
+
+      <!-- Two columns -->
+      <div style="display:grid;grid-template-columns:1fr;gap:24px;margin-top:8px;" id="dash-cols">
+
+        <!-- Recent offers -->
+        <div class="card">
+          <div class="card-header">
+            <h3 style="font-size:1rem;">Recent Offers</h3>
+            <a href="/offers.html" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Client</th><th>Job</th><th>Offered Price</th><th>Status</th><th></th></tr></thead>
+              <tbody id="offers-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Active contracts -->
+        <div class="card">
+          <div class="card-header">
+            <h3 style="font-size:1rem;">Active Contracts</h3>
+            <a href="/contracts.html" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Client</th><th>Job</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+              <tbody id="contracts-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="card" style="margin-top:24px;">
+        <div class="card-header">
+          <h3 style="font-size:1rem;">Recent Transactions</h3>
+          <a href="/wallet.html" class="btn btn-ghost btn-sm">Wallet →</a>
+        </div>
+        <div id="transactions-list" style="padding:0 var(--space-6) var(--space-4);">
+          <div style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+(async () => {
+  await initDashboard('worker');
+
+  // Greeting
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('dash-greeting').textContent = `${greet}, ${dashUser.fullName?.split(' ')[0] || 'Worker'} 👋`;
+
+  // VIP banner
+  if (dashUser.isVIP && dashUser.vipEndDate) {
+    const end = dashUser.vipEndDate?.toDate ? dashUser.vipEndDate.toDate() : new Date(dashUser.vipEndDate);
+    if (end > new Date()) {
+      document.getElementById('vip-banner').style.display = 'flex';
+      document.getElementById('vip-end-date').textContent = end.toLocaleDateString('en-NG', { dateStyle: 'long' });
+    }
+  }
+
+  // Profile completion
+  const fields = ['bio','phone','profilePhoto','state','city'];
+  const filled = fields.filter(f => dashUser[f]).length;
+  const pct = Math.round((filled / fields.length) * 100);
+  if (pct < 80) {
+    document.getElementById('profile-completion-banner').style.display = 'block';
+    document.getElementById('profile-bar').style.width = pct + '%';
+    document.getElementById('profile-pct').textContent = pct;
+  }
+
+  // Stats
+  document.getElementById('stat-completed').textContent = dashUser.completedJobsCount || 0;
+  document.getElementById('stat-rating').textContent = dashUser.ratingAverage ? dashUser.ratingAverage.toFixed(1) + ' ★' : 'N/A';
+
+  // Wallet
+  await loadWalletSummary('wallet-stats');
+
+  // Active jobs
+  try {
+    const token = await getAuthToken();
+    const res = await fetch('/api/v1/jobs?role=worker&status=in_progress&limit=5', { headers: { 'Authorization': `Bearer ${token}` } });
+    const data = await res.json();
+    document.getElementById('stat-active-jobs').textContent = data.total || data.jobs?.length || 0;
+  } catch(e) { document.getElementById('stat-active-jobs').textContent = '0'; }
+
+  // Offers
+  await loadTableData('/api/v1/offers?role=worker&limit=5', 'offers-tbody', (o) => `
+    <tr>
+      <td>${o.clientName || '—'}</td>
+      <td>${truncate(o.jobTitle || '—', 30)}</td>
+      <td>${formatNaira(o.offeredPrice)}</td>
+      <td><span class="status-pill status-${o.status}">${o.status}</span></td>
+      <td><a href="/offers.html?id=${o.id}" class="btn btn-ghost btn-sm">View</a></td>
+    </tr>`, 'No pending offers');
+
+  // Contracts
+  await loadTableData('/api/v1/contracts?role=worker&status=active&limit=5', 'contracts-tbody', (c) => `
+    <tr>
+      <td>${c.clientName || '—'}</td>
+      <td>${truncate(c.jobTitle || '—', 30)}</td>
+      <td>${formatNaira(c.agreedPrice)}</td>
+      <td><span class="status-pill status-${c.contractStatus}">${c.contractStatus}</span></td>
+      <td><a href="/contracts.html?id=${c.id}" class="btn btn-ghost btn-sm">View</a></td>
+    </tr>`, 'No active contracts');
+
+  // Transactions
+  try {
+    const token = await getAuthToken();
+    const res = await fetch('/api/v1/wallet/transactions?limit=5', { headers: { 'Authorization': `Bearer ${token}` } });
+    const data = await res.json();
+    const txs = data.transactions || [];
+    const listEl = document.getElementById('transactions-list');
+    if (!txs.length) {
+      listEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);">No transactions yet. Complete your first job to start earning!</div>`;
+    } else {
+      listEl.innerHTML = txs.map(tx => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-weight:600;font-size:0.9rem;">${tx.note || tx.type}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);">${timeAgo(tx.createdAt)}</div>
+          </div>
+          <div style="font-weight:700;font-family:var(--font-display);color:${tx.type === 'withdrawal' ? 'var(--status-error)' : 'var(--status-success)'};">
+            ${tx.type === 'withdrawal' ? '-' : '+'}${formatNaira(tx.amount)}
+          </div>
+        </div>`).join('');
+    }
+  } catch(e) {}
+
+  // Pending offers badge
+  try {
+    const token = await getAuthToken();
+    const res = await fetch('/api/v1/offers?role=worker&status=pending&limit=1', { headers: { 'Authorization': `Bearer ${token}` } });
+    const data = await res.json();
+    const count = data.total || 0;
+    const badge = document.getElementById('offers-badge');
+    if (badge && count > 0) { badge.style.display = 'inline'; badge.textContent = count; }
+  } catch(e) {}
+})();
+
+// Two-col layout on wide screens
+const style = document.createElement('style');
+style.textContent = `@media(min-width:1024px){#dash-cols{grid-template-columns:1fr 1fr;}}`;
+document.head.appendChild(style);
+
+async function markAllRead() {
+  try {
+    const token = await getAuthToken();
+    await fetch('/api/v1/notifications/mark-all-read', { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+    document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+    document.getElementById('notif-dot').style.display = 'none';
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

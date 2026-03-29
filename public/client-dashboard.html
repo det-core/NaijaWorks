@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Client Dashboard — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- Sidebar -->
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a href="/client-dashboard.html" class="sidebar-link active"><span class="icon">🏠</span>Dashboard</a>
+      <a href="/browse-workers.html"   class="sidebar-link"><span class="icon">🔍</span>Find Workers</a>
+      <a href="/client-jobs.html"      class="sidebar-link"><span class="icon">💼</span>My Jobs</a>
+      <a href="/offers.html"           class="sidebar-link"><span class="icon">🤝</span>Offers</a>
+      <a href="/contracts.html"        class="sidebar-link"><span class="icon">📄</span>Contracts</a>
+      <div class="sidebar-section-label">Account</div>
+      <a href="/wallet.html"           class="sidebar-link"><span class="icon">💰</span>Payments</a>
+      <a href="/reviews.html"          class="sidebar-link"><span class="icon">⭐</span>Reviews</a>
+      <a href="/notifications.html"    class="sidebar-link"><span class="icon">🔔</span>Notifications</a>
+      <a href="/edit-profile.html"     class="sidebar-link"><span class="icon">⚙️</span>Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div>
+          <div class="sidebar-user-name" id="sidebar-user-name">Loading…</div>
+          <div class="sidebar-user-role" id="sidebar-user-role">Client</div>
+        </div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <a href="/client-jobs.html" class="btn btn-primary btn-sm hide-mobile">+ Post a Job</a>
+        <span style="font-size:0.875rem;color:var(--text-muted);">Hi, <strong id="topbar-username"></strong></span>
+        <button class="notif-btn" id="notif-btn">🔔<span class="notif-dot" id="notif-dot" style="display:none"></span></button>
+      </div>
+    </div>
+
+    <div class="notif-panel" id="notif-panel">
+      <div class="notif-panel-header">Notifications
+        <button onclick="markAllRead()" style="background:none;border:none;font-size:0.8rem;color:var(--primary);cursor:pointer;font-weight:600;">Mark all read</button>
+      </div>
+      <div class="notif-list"></div>
+    </div>
+
+    <div class="dash-content">
+      <div class="page-title">Client Dashboard</div>
+      <div class="page-subtitle" id="dash-greeting">Welcome back!</div>
+
+      <!-- Quick actions -->
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+        <a href="/browse-workers.html" class="btn btn-primary">🔍 Find a Worker</a>
+        <a href="/client-jobs.html?action=post" class="btn btn-secondary">+ Post a Job</a>
+        <a href="/browse-workers.html?type=physical" class="btn btn-ghost">📍 Local Workers</a>
+        <a href="/browse-workers.html?type=remote"   class="btn btn-ghost">💻 Remote Workers</a>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dbeafe;">💼</div>
+          <div class="stat-label">Jobs Posted</div>
+          <div class="stat-value" id="stat-posted">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dcfce7;">✅</div>
+          <div class="stat-label">Jobs Completed</div>
+          <div class="stat-value" id="stat-completed">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fce7f3;">📄</div>
+          <div class="stat-label">Active Contracts</div>
+          <div class="stat-value" id="stat-active">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fef9c3;">💸</div>
+          <div class="stat-label">Total Spent</div>
+          <div class="stat-value" id="stat-spent">—</div>
+        </div>
+      </div>
+
+      <!-- Two cols -->
+      <div style="display:grid;grid-template-columns:1fr;gap:24px;" id="dash-cols">
+        <!-- Active jobs -->
+        <div class="card">
+          <div class="card-header">
+            <h3 style="font-size:1rem;">My Active Jobs</h3>
+            <a href="/client-jobs.html" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Job Title</th><th>Category</th><th>Budget</th><th>Status</th><th></th></tr></thead>
+              <tbody id="jobs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Active contracts -->
+        <div class="card">
+          <div class="card-header">
+            <h3 style="font-size:1rem;">Active Contracts</h3>
+            <a href="/contracts.html" class="btn btn-ghost btn-sm">View All</a>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Worker</th><th>Job</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+              <tbody id="contracts-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recently viewed workers -->
+      <div class="card" style="margin-top:24px;">
+        <div class="card-header">
+          <h3 style="font-size:1rem;">Browse Recommended Workers</h3>
+          <a href="/browse-workers.html" class="btn btn-ghost btn-sm">See All →</a>
+        </div>
+        <div style="padding:var(--space-5);">
+          <div class="worker-grid" id="recommended-workers">
+            <div class="card" style="height:180px;"><div class="skeleton" style="height:100%;"></div></div>
+            <div class="card" style="height:180px;"><div class="skeleton" style="height:100%;"></div></div>
+            <div class="card" style="height:180px;"><div class="skeleton" style="height:100%;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+(async () => {
+  await initDashboard('client');
+
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('dash-greeting').textContent = `${greet}, ${dashUser.fullName?.split(' ')[0] || 'there'} 👋`;
+
+  document.getElementById('stat-posted').textContent = dashUser.postedJobsCount || 0;
+
+  // Stats from API
+  try {
+    const token = await getAuthToken();
+    const [jobsRes, contractsRes] = await Promise.all([
+      fetch('/api/v1/jobs?role=client&limit=1', { headers: { 'Authorization': `Bearer ${token}` } }),
+      fetch('/api/v1/contracts?role=client&status=active&limit=1', { headers: { 'Authorization': `Bearer ${token}` } })
+    ]);
+    const jobsData      = await jobsRes.json();
+    const contractsData = await contractsRes.json();
+    document.getElementById('stat-completed').textContent = jobsData.completedCount || 0;
+    document.getElementById('stat-active').textContent    = contractsData.total || 0;
+    document.getElementById('stat-spent').textContent     = formatNaira(jobsData.totalSpent || 0);
+  } catch(e) {
+    ['stat-completed','stat-active'].forEach(id => document.getElementById(id).textContent = '0');
+    document.getElementById('stat-spent').textContent = '₦0';
+  }
+
+  // Jobs table
+  await loadTableData('/api/v1/jobs?role=client&limit=5', 'jobs-tbody', (j) => `
+    <tr>
+      <td><a href="/client-jobs.html?id=${j.id}" style="font-weight:600;color:var(--primary);">${truncate(j.title,35)}</a></td>
+      <td><span class="badge badge-gray">${j.category || '—'}</span></td>
+      <td>${formatNaira(j.budget)}</td>
+      <td><span class="status-pill status-${j.status}">${j.status}</span></td>
+      <td><a href="/client-jobs.html?id=${j.id}" class="btn btn-ghost btn-sm">Manage</a></td>
+    </tr>`, 'No jobs posted yet. <a href="/client-jobs.html?action=post" style="color:var(--primary);font-weight:600;">Post your first job →</a>');
+
+  // Contracts table
+  await loadTableData('/api/v1/contracts?role=client&limit=5', 'contracts-tbody', (c) => `
+    <tr>
+      <td>${c.workerName || '—'}</td>
+      <td>${truncate(c.jobTitle || '—', 30)}</td>
+      <td>${formatNaira(c.agreedPrice)}</td>
+      <td><span class="status-pill status-${c.contractStatus}">${c.contractStatus}</span></td>
+      <td><a href="/contracts.html?id=${c.id}" class="btn btn-ghost btn-sm">View</a></td>
+    </tr>`, 'No active contracts');
+
+  // Recommended workers
+  try {
+    const res = await fetch('/api/v1/workers?limit=3&featured=true');
+    const data = await res.json();
+    const grid = document.getElementById('recommended-workers');
+    const workers = data.workers || [];
+    if (workers.length) {
+      grid.innerHTML = workers.map(w => `
+        <a href="/worker-profile.html?uid=${w.uid}" class="worker-card">
+          <div class="worker-card-top">
+            ${w.profilePhoto ? `<img src="${w.profilePhoto}" class="worker-avatar" alt="${w.fullName}" />` : `<div class="worker-avatar-placeholder">${getInitials(w.fullName)}</div>`}
+            <div class="worker-info">
+              <div class="worker-name">${w.fullName}${w.isVIP?' <span class="badge badge-vip" style="font-size:0.65rem;">VIP</span>':''}</div>
+              <div class="worker-title">${w.title||''}</div>
+              <div class="worker-location">📍 ${w.city||w.state||'Nigeria'}</div>
+            </div>
+          </div>
+          <div class="worker-card-body">
+            <div class="worker-rating">
+              <span class="stars">${'★'.repeat(Math.round(w.ratingAverage||0))}</span>
+              <span>${(w.ratingAverage||0).toFixed(1)}</span>
+            </div>
+            <span class="worker-price">${formatNaira(w.basePrice||0)}</span><span class="worker-price-label"> starting</span>
+          </div>
+        </a>`).join('');
+    } else {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-muted);">No workers yet. <a href="/browse-workers.html" style="color:var(--primary);">Browse workers →</a></div>`;
+    }
+  } catch(e) {}
+})();
+
+const style = document.createElement('style');
+style.textContent = `@media(min-width:1024px){#dash-cols{grid-template-columns:1fr 1fr;}}`;
+document.head.appendChild(style);
+
+async function markAllRead() {
+  try {
+    const token = await getAuthToken();
+    await fetch('/api/v1/notifications/mark-all-read', { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+    document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+    document.getElementById('notif-dot').style.display = 'none';
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    body { background: var(--charcoal-50); min-height: 100vh; display: flex; flex-direction: column; }
+    .auth-page { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: var(--space-6) var(--space-4); }
+    .auth-card { background: white; border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); width: 100%; max-width: 520px; overflow: hidden; }
+    .auth-header { background: linear-gradient(135deg, var(--charcoal-900), var(--green-900)); padding: var(--space-8) var(--space-8) var(--space-6); text-align: center; }
+    .auth-header h1 { font-size: 1.5rem; color: white; margin-bottom: 6px; }
+    .auth-header p  { color: rgba(255,255,255,0.6); font-size: 0.9375rem; }
+    .auth-body { padding: var(--space-8); }
+    .auth-footer { text-align: center; padding: var(--space-5) var(--space-8); border-top: 1px solid var(--border); font-size: 0.9375rem; color: var(--text-secondary); background: var(--charcoal-50); }
+    .auth-footer a { color: var(--primary); font-weight: 600; }
+    .auth-nav { background: white; border-bottom: 1px solid var(--border); padding: 0 var(--space-4); height: 60px; display: flex; align-items: center; }
+    .password-wrap { position: relative; }
+    .password-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 4px; }
+
+    /* Role selector */
+    .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-6); }
+    .role-option {
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      cursor: pointer;
+      text-align: center;
+      transition: all var(--transition-normal);
+      position: relative;
+    }
+    .role-option:hover { border-color: var(--primary); background: var(--green-50); }
+    .role-option.selected { border-color: var(--primary); background: var(--green-50); }
+    .role-option.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 22px;
+      height: 22px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+    .role-icon { font-size: 2rem; margin-bottom: 8px; }
+    .role-title { font-family: var(--font-display); font-weight: 700; font-size: 0.9375rem; margin-bottom: 4px; }
+    .role-desc  { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+
+    /* Progress steps */
+    .progress-steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: var(--space-8);
+    }
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--charcoal-100);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      font-family: var(--font-display);
+      transition: all var(--transition-normal);
+      position: relative;
+      z-index: 1;
+    }
+    .step-dot.active { background: var(--primary); color: white; }
+    .step-dot.done   { background: var(--green-100); color: var(--primary); }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: var(--charcoal-100);
+      max-width: 60px;
+      transition: background var(--transition-normal);
+    }
+    .step-line.done { background: var(--primary); }
+
+    /* Step panels */
+    .form-step { display: none; }
+    .form-step.active { display: block; }
+  </style>
+</head>
+<body>
+
+<nav class="auth-nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">N</div>
+    Naija<span>Works</span>
+  </a>
+</nav>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Create Your Account</h1>
+      <p>Join thousands hiring and earning on NaijaWorks</p>
+    </div>
+
+    <div class="auth-body">
+      <!-- Error alert -->
+      <div id="auth-error" style="display:none;background:var(--status-error-bg);border:1px solid #fca5a5;border-radius:var(--radius-md);padding:12px 16px;margin-bottom:20px;font-size:0.875rem;color:var(--status-error);"></div>
+
+      <!-- Progress -->
+      <div class="progress-steps" id="progress-steps">
+        <div class="step-dot active" id="step-dot-1">1</div>
+        <div class="step-line" id="step-line-1"></div>
+        <div class="step-dot" id="step-dot-2">2</div>
+        <div class="step-line" id="step-line-2"></div>
+        <div class="step-dot" id="step-dot-3">3</div>
+      </div>
+
+      <!-- Step 1: Role Selection -->
+      <div class="form-step active" id="step-1">
+        <h3 style="font-size:1.0625rem;margin-bottom:6px;">I want to…</h3>
+        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:20px;">Choose your account type to get started.</p>
+
+        <div class="role-selector">
+          <div class="role-option" id="role-client" onclick="selectRole('client')">
+            <div class="role-icon">🏢</div>
+            <div class="role-title">Hire Workers</div>
+            <div class="role-desc">I need to hire someone for a job or project</div>
+          </div>
+          <div class="role-option" id="role-worker" onclick="selectRole('worker')">
+            <div class="role-icon">👷</div>
+            <div class="role-title">Offer Services</div>
+            <div class="role-desc">I want to find work and earn money</div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full btn-lg" id="step1-next" onclick="goToStep(2)" disabled>
+          Continue →
+        </button>
+      </div>
+
+      <!-- Step 2: Account Details -->
+      <div class="form-step" id="step-2">
+        <h3 style="font-size:1.0625rem;margin-bottom:20px;">Your Details</h3>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label" for="firstName">First Name <span class="required">*</span></label>
+            <input type="text" id="firstName" class="form-input" placeholder="e.g. Emeka" autocomplete="given-name" />
+            <span class="form-error" id="firstName-error">First name is required</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lastName">Last Name <span class="required">*</span></label>
+            <input type="text" id="lastName" class="form-input" placeholder="e.g. Okafor" autocomplete="family-name" />
+            <span class="form-error" id="lastName-error">Last name is required</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address <span class="required">*</span></label>
+          <input type="email" id="email" class="form-input" placeholder="you@example.com" autocomplete="email" />
+          <span class="form-error" id="email-error">Please enter a valid email</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone Number <span class="required">*</span></label>
+          <input type="tel" id="phone" class="form-input" placeholder="08012345678" autocomplete="tel" />
+          <span class="form-error" id="phone-error">Please enter a valid Nigerian phone number</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password <span class="required">*</span></label>
+          <div class="password-wrap">
+            <input type="password" id="password" class="form-input" placeholder="At least 8 characters" autocomplete="new-password" />
+            <button type="button" class="password-toggle" id="toggle-pw">👁</button>
+          </div>
+          <div id="password-strength" style="margin-top:8px;display:none;">
+            <div style="height:4px;border-radius:2px;background:var(--charcoal-100);overflow:hidden;">
+              <div id="strength-bar" style="height:100%;width:0%;border-radius:2px;transition:all 0.3s;"></div>
+            </div>
+            <div id="strength-label" style="font-size:0.75rem;margin-top:4px;color:var(--text-muted);"></div>
+          </div>
+          <span class="form-error" id="password-error">Password must be at least 8 characters</span>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button class="btn btn-ghost" onclick="goToStep(1)" style="flex:1;">← Back</button>
+          <button class="btn btn-primary" id="step2-next" onclick="validateStep2()" style="flex:2;">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Location -->
+      <div class="form-step" id="step-3">
+        <h3 style="font-size:1.0625rem;margin-bottom:6px;">Your Location</h3>
+        <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:20px;">Help us match you with nearby opportunities.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="state">State <span class="required">*</span></label>
+          <select id="state" class="form-select">
+            <option value="">Select your state</option>
+          </select>
+          <span class="form-error" id="state-error">Please select your state</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="city">City / Town</label>
+          <input type="text" id="city" class="form-input" placeholder="e.g. Ikeja" />
+        </div>
+
+        <button id="detect-location-btn" class="btn btn-ghost btn-full" onclick="detectLocation()" style="margin-bottom:20px;gap:8px;">
+          📍 Detect My Location Automatically
+        </button>
+
+        <div id="detected-location" style="display:none;background:var(--green-50);border:1px solid var(--green-300);border-radius:var(--radius-md);padding:12px 16px;margin-bottom:20px;font-size:0.875rem;color:var(--green-800);"></div>
+
+        <div style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:24px;">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="agree-terms" style="width:18px;height:18px;accent-color:var(--primary);" />
+            <span style="font-size:0.875rem;color:var(--text-secondary);">
+              I agree to NaijaWorks' <a href="#" style="color:var(--primary);font-weight:600;">Terms of Service</a> and <a href="#" style="color:var(--primary);font-weight:600;">Privacy Policy</a>
+            </span>
+          </label>
+        </div>
+
+        <div style="display:flex;gap:12px;">
+          <button class="btn btn-ghost" onclick="goToStep(2)" style="flex:1;">← Back</button>
+          <button class="btn btn-primary btn-lg" id="signup-btn" onclick="handleSignup()" style="flex:2;">
+            Create Account 🎉
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 4: Success -->
+      <div class="form-step" id="step-success" style="text-align:center;padding:20px 0;">
+        <div style="font-size:3.5rem;margin-bottom:16px;">🎉</div>
+        <h2 style="font-size:1.5rem;margin-bottom:8px;">Account Created!</h2>
+        <p style="color:var(--text-secondary);margin-bottom:32px;">Welcome to NaijaWorks. Redirecting you to your dashboard...</p>
+        <div class="spinner dark" style="margin:0 auto;width:28px;height:28px;border-width:3px;"></div>
+      </div>
+    </div>
+
+    <div class="auth-footer" id="auth-footer">
+      Already have an account? <a href="/login.html">Log in</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>
+  firebase.initializeApp(NaijaWorksConfig.firebase);
+</script>
+<script src="/js/main.js"></script>
+<script>
+// Redirect if already logged in
+redirectIfLoggedIn();
+
+let selectedRole = null;
+let detectedLat  = null;
+let detectedLng  = null;
+let detectedLabel= '';
+
+// Pre-select role from URL
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('role')) {
+  selectRole(urlParams.get('role'));
+}
+
+// Populate states
+const stateSelect = document.getElementById('state');
+NaijaWorksConfig.nigerianStates.forEach(s => {
+  stateSelect.innerHTML += `<option value="${s}">${s}</option>`;
+});
+
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('role-client').classList.toggle('selected', role === 'client');
+  document.getElementById('role-worker').classList.toggle('selected', role === 'worker');
+  document.getElementById('step1-next').disabled = false;
+}
+
+function goToStep(n) {
+  document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+  document.getElementById(`step-${n}`).classList.add('active');
+
+  // Update progress dots
+  for (let i = 1; i <= 3; i++) {
+    const dot  = document.getElementById(`step-dot-${i}`);
+    const line = document.getElementById(`step-line-${i}`);
+    if (i < n)  { dot.classList.add('done');   dot.classList.remove('active'); dot.textContent = '✓'; }
+    if (i === n){ dot.classList.add('active');  dot.classList.remove('done'); dot.textContent = i; }
+    if (i > n)  { dot.classList.remove('done', 'active'); dot.textContent = i; }
+    if (line) { line.classList.toggle('done', i < n); }
+  }
+}
+
+// Password strength
+document.getElementById('password').addEventListener('input', function() {
+  const pw = this.value;
+  const wrap = document.getElementById('password-strength');
+  const bar  = document.getElementById('strength-bar');
+  const lbl  = document.getElementById('strength-label');
+  if (!pw) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+  const levels = [
+    { pct: '20%', color: '#dc2626', label: 'Very weak' },
+    { pct: '40%', color: '#f97316', label: 'Weak' },
+    { pct: '60%', color: '#eab308', label: 'Fair' },
+    { pct: '80%', color: '#22c55e', label: 'Strong' },
+    { pct: '100%', color: '#16a34a', label: 'Very strong' },
+  ];
+  const l = levels[Math.min(score, 4)];
+  bar.style.width = l.pct;
+  bar.style.background = l.color;
+  lbl.textContent = l.label;
+  lbl.style.color = l.color;
+});
+
+// Toggle password
+document.getElementById('toggle-pw').addEventListener('click', function() {
+  const pw = document.getElementById('password');
+  pw.type = pw.type === 'password' ? 'text' : 'password';
+  this.textContent = pw.type === 'password' ? '👁' : '🙈';
+});
+
+function validateStep2() {
+  clearAllErrors(document.getElementById('step-2'));
+  const first = document.getElementById('firstName').value.trim();
+  const last  = document.getElementById('lastName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const pw    = document.getElementById('password').value;
+
+  let valid = true;
+  if (!first) { showFieldError('firstName', 'First name is required'); valid = false; }
+  if (!last)  { showFieldError('lastName',  'Last name is required'); valid = false; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showFieldError('email', 'Enter a valid email'); valid = false; }
+  if (!phone || !/^0[789][01]\d{8}$/.test(phone.replace(/\s/g, ''))) { showFieldError('phone', 'Enter a valid Nigerian phone number (e.g. 08012345678)'); valid = false; }
+  if (!pw || pw.length < 8) { showFieldError('password', 'Password must be at least 8 characters'); valid = false; }
+  if (valid) goToStep(3);
+}
+
+async function detectLocation() {
+  const btn = document.getElementById('detect-location-btn');
+  setButtonLoading(btn, true, 'Detecting…');
+  try {
+    const pos = await new Promise((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
+    );
+    detectedLat = pos.coords.latitude;
+    detectedLng = pos.coords.longitude;
+
+    // Reverse geocode via nominatim (free, no key needed)
+    const resp = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${detectedLat}&lon=${detectedLng}&format=json`,
+      { headers: { 'Accept-Language': 'en' } }
+    );
+    const geo = await resp.json();
+    const addr = geo.address || {};
+    const state = addr.state || '';
+    const city  = addr.city || addr.town || addr.village || '';
+    detectedLabel = `${city ? city + ', ' : ''}${state}, Nigeria`;
+
+    // Auto-fill form
+    const stateSelect = document.getElementById('state');
+    const match = [...stateSelect.options].find(o => state.toLowerCase().includes(o.value.toLowerCase()) || o.value.toLowerCase().includes(state.toLowerCase().split(' ')[0]));
+    if (match) stateSelect.value = match.value;
+    if (city) document.getElementById('city').value = city;
+
+    document.getElementById('detected-location').style.display = 'block';
+    document.getElementById('detected-location').innerHTML = `📍 <strong>Detected:</strong> ${detectedLabel}`;
+  } catch (err) {
+    showToast('Could not detect location. Please select manually.', 'warning');
+  } finally {
+    setButtonLoading(btn, false, '📍 Detect My Location Automatically');
+  }
+}
+
+async function handleSignup() {
+  document.getElementById('auth-error').style.display = 'none';
+
+  if (!document.getElementById('agree-terms').checked) {
+    showToast('Please agree to the Terms of Service to continue.', 'warning');
+    return;
+  }
+
+  const state = document.getElementById('state').value;
+  if (!state) { showFieldError('state', 'Please select your state'); return; }
+
+  const btn = document.getElementById('signup-btn');
+  setButtonLoading(btn, true, 'Creating account…');
+
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const firstName= document.getElementById('firstName').value.trim();
+  const lastName = document.getElementById('lastName').value.trim();
+  const phone    = document.getElementById('phone').value.trim();
+  const city     = document.getElementById('city').value.trim();
+
+  try {
+    // Create Firebase auth user
+    const userCred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+
+    // Update display name
+    await userCred.user.updateProfile({ displayName: `${firstName} ${lastName}` });
+
+    const idToken = await userCred.user.getIdToken();
+
+    // Register on backend
+    const res = await fetch('/api/v1/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken, firstName, lastName, phone, role: selectedRole }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      // Delete Firebase user if backend registration failed
+      await userCred.user.delete();
+      document.getElementById('auth-error').textContent = data.message || 'Registration failed';
+      document.getElementById('auth-error').style.display = 'block';
+      setButtonLoading(btn, false);
+      return;
+    }
+
+    // Save location to Firestore
+    try {
+      const db = firebase.firestore();
+      await db.collection('users').doc(userCred.user.uid).update({
+        state, city,
+        latitude: detectedLat,
+        longitude: detectedLng,
+        detectedLocationLabel: detectedLabel,
+        manualLocationLabel: `${city ? city + ', ' : ''}${state}`,
+        savedLocationUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch (e) { /* Non-fatal */ }
+
+    // Show success
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step-success').classList.add('active');
+    document.getElementById('auth-footer').style.display = 'none';
+    document.getElementById('progress-steps').style.display = 'none';
+
+    // Redirect after delay
+    setTimeout(() => {
+      window.location.href = selectedRole === 'worker' ? '/worker-dashboard.html' : '/client-dashboard.html';
+    }, 2000);
+
+  } catch (err) {
+    setButtonLoading(btn, false);
+    const firebaseErrors = {
+      'auth/email-already-in-use': 'An account with this email already exists. <a href="/login.html" style="color:var(--primary);font-weight:600;">Log in instead</a>',
+      'auth/weak-password':        'Password is too weak. Use at least 8 characters.',
+      'auth/invalid-email':        'Please enter a valid email address.',
+      'auth/network-request-failed': 'Network error. Check your internet and try again.',
+    };
+    const errMsg = firebaseErrors[err.code] || err.message || 'Registration failed. Please try again.';
+    document.getElementById('auth-error').innerHTML = errMsg;
+    document.getElementById('auth-error').style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>

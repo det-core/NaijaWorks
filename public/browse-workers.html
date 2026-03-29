@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse Workers — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    .browse-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+    @media (min-width: 768px) {
+      .browse-layout { grid-template-columns: 260px 1fr; }
+    }
+
+    /* Filters sidebar */
+    .filters-panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      height: fit-content;
+      position: sticky;
+      top: calc(var(--nav-height) + 16px);
+    }
+    .filter-group { margin-bottom: var(--space-6); }
+    .filter-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-3);
+    }
+    .filter-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      cursor: pointer;
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+    }
+    .filter-option:hover { color: var(--text-primary); }
+    .filter-option input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+    .filter-option.active { color: var(--primary); font-weight: 600; }
+
+    /* Price range */
+    .price-range-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .price-input {
+      padding: 8px 12px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      width: 100%;
+      font-family: var(--font-body);
+    }
+    .price-input:focus { outline: none; border-color: var(--border-focus); }
+
+    /* Top search bar */
+    .browse-search-bar {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+    .browse-search-input {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      align-items: center;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0 14px;
+      gap: 10px;
+      transition: border-color var(--transition-fast);
+    }
+    .browse-search-input:focus-within { border-color: var(--border-focus); }
+    .browse-search-input input { border: none; outline: none; flex: 1; padding: 12px 0; font-size: 0.9375rem; background: transparent; font-family: var(--font-body); }
+
+    /* Sort bar */
+    .results-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: var(--space-5);
+    }
+    .results-count { font-size: 0.9rem; color: var(--text-muted); }
+    .results-count strong { color: var(--text-primary); font-weight: 700; }
+
+    /* Filter toggle (mobile) */
+    .filter-toggle-btn {
+      display: flex;
+      gap: 8px;
+    }
+    @media (min-width: 768px) { .filter-toggle-btn { display: none; } }
+
+    .mobile-filter-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1001;
+      background: rgba(0,0,0,0.5);
+      display: none;
+    }
+    .mobile-filter-panel {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 300px;
+      background: white;
+      padding: var(--space-6);
+      overflow-y: auto;
+    }
+    .mobile-filter-overlay.open { display: block; }
+
+    /* Hero */
+    .browse-hero {
+      background: linear-gradient(135deg, var(--charcoal-900), var(--green-900));
+      padding: var(--space-10) 0;
+      color: white;
+    }
+    .browse-hero h1 { color: white; font-size: clamp(1.5rem, 3vw, 2rem); margin-bottom: 8px; }
+    .browse-hero p  { color: rgba(255,255,255,0.65); font-size: 1rem; }
+
+    /* Active filters */
+    .active-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: var(--space-4);
+    }
+    .active-filter-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-100);
+      color: var(--green-800);
+      border-radius: var(--radius-full);
+      padding: 4px 12px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+    .remove-filter { cursor: pointer; font-size: 1rem; line-height: 1; }
+    .remove-filter:hover { color: var(--status-error); }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo"><div class="nav-logo-icon">N</div>Naija<span>Works</span></a>
+      <ul class="nav-links">
+        <li><a href="/browse-workers.html" class="active">Find Workers</a></li>
+        <li><a href="/browse-jobs.html">Find Jobs</a></li>
+        <li><a href="/categories.html">Categories</a></li>
+        <li><a href="/how-it-works.html">How It Works</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="/login.html"  class="btn btn-ghost  btn-sm hide-mobile" id="nav-login-btn">Log In</a>
+        <a href="/signup.html" class="btn btn-primary btn-sm" id="nav-signup-btn">Get Started</a>
+        <a href="/client-dashboard.html" class="btn btn-primary btn-sm" id="nav-dashboard-btn" style="display:none">Dashboard</a>
+        <button class="btn btn-ghost btn-sm" id="nav-logout-btn" data-logout style="display:none">Log Out</button>
+        <button class="nav-menu-btn" id="nav-menu-btn"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Browse Hero -->
+<div class="browse-hero">
+  <div class="container">
+    <h1>Browse Workers</h1>
+    <p>Find verified Nigerian professionals for any job — local or remote.</p>
+    <!-- Search bar -->
+    <div style="margin-top:var(--space-5);max-width:640px;">
+      <div class="browse-search-input" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search-input" placeholder="Search skills, services, names…" style="color:white;" />
+        <select id="type-filter" style="background:transparent;border:none;outline:none;color:rgba(255,255,255,0.7);font-size:0.875rem;cursor:pointer;padding:12px 0;">
+          <option value="all">All Types</option>
+          <option value="physical">Local / Physical</option>
+          <option value="remote">Remote / Digital</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="applySearch()" style="flex-shrink:0;">Search</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<section class="section-sm">
+  <div class="container">
+    <div class="browse-layout">
+
+      <!-- Filters (desktop) -->
+      <aside class="filters-panel hide-mobile">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h3 style="font-size:1rem;">Filters</h3>
+          <button onclick="clearAllFilters()" style="background:none;border:none;color:var(--primary);font-size:0.8125rem;cursor:pointer;font-weight:600;">Clear all</button>
+        </div>
+        <div id="desktop-filters"><!-- Rendered by JS --></div>
+      </aside>
+
+      <!-- Results -->
+      <div>
+        <!-- Mobile filter button -->
+        <div class="filter-toggle-btn" style="margin-bottom:16px;">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mobile-filter-overlay').classList.add('open')">⚙️ Filters</button>
+          <select id="sort-select-mobile" class="form-select" style="flex:1;min-height:40px;padding:8px 12px;" onchange="applySearch()">
+            <option value="rating">Top Rated</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="newest">Newest</option>
+            <option value="vip">VIP First</option>
+          </select>
+        </div>
+
+        <!-- Active filters -->
+        <div class="active-filters" id="active-filters"></div>
+
+        <!-- Results bar -->
+        <div class="results-bar">
+          <span class="results-count">Showing <strong id="results-count">0</strong> workers</span>
+          <select id="sort-select" class="form-select hide-mobile" style="width:auto;min-width:180px;min-height:40px;padding:8px 14px;" onchange="applySearch()">
+            <option value="rating">Sort: Top Rated</option>
+            <option value="price_asc">Sort: Price Low–High</option>
+            <option value="price_desc">Sort: Price High–Low</option>
+            <option value="newest">Sort: Newest</option>
+            <option value="vip">Sort: VIP First</option>
+          </select>
+        </div>
+
+        <!-- Workers grid -->
+        <div class="worker-grid" id="workers-grid">
+          <!-- Skeleton loaders -->
+          <div class="card" style="height:220px;"><div class="skeleton" style="height:100%;"></div></div>
+          <div class="card" style="height:220px;"><div class="skeleton" style="height:100%;"></div></div>
+          <div class="card" style="height:220px;"><div class="skeleton" style="height:100%;"></div></div>
+          <div class="card" style="height:220px;"><div class="skeleton" style="height:100%;"></div></div>
+          <div class="card" style="height:220px;"><div class="skeleton" style="height:100%;"></div></div>
+          <div class="card" style="height:220px;"><div class="skeleton" style="height:100%;"></div></div>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" style="display:flex;justify-content:center;gap:8px;margin-top:32px;flex-wrap:wrap;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mobile Filter Overlay -->
+<div id="mobile-filter-overlay" class="mobile-filter-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="mobile-filter-panel">
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+      <h3>Filters</h3>
+      <button onclick="document.getElementById('mobile-filter-overlay').classList.remove('open')" style="background:none;border:none;font-size:1.25rem;cursor:pointer;">✕</button>
+    </div>
+    <div id="mobile-filters"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:20px;" onclick="applySearch();document.getElementById('mobile-filter-overlay').classList.remove('open')">Apply Filters</button>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2025 NaijaWorks. All rights reserved.</p>
+      <a href="/" style="color:rgba(255,255,255,0.4);font-size:0.875rem;">← Back to Home</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script>
+// ── State ────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+let filters = {
+  q:          params.get('q')        || '',
+  type:       params.get('type')     || 'all',
+  category:   params.get('category') || '',
+  state:      params.get('state')    || '',
+  minPrice:   params.get('minPrice') || '',
+  maxPrice:   params.get('maxPrice') || '',
+  minRating:  params.get('minRating')|| '',
+  vipOnly:    params.get('vipOnly')  === 'true',
+  sort:       params.get('sort')     || 'rating',
+  page:       parseInt(params.get('page')) || 1,
+};
+
+const PAGE_SIZE = 12;
+
+// Pre-fill search inputs
+if (filters.q)    document.getElementById('search-input').value = filters.q;
+if (filters.type) document.getElementById('type-filter').value  = filters.type;
+
+// Build filter panels
+function buildFilterPanel(containerId) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = `
+    <div class="filter-group">
+      <div class="filter-title">Service Type</div>
+      <label class="filter-option"><input type="radio" name="type_${containerId}" value="all" ${filters.type==='all'?'checked':''}> All Services</label>
+      <label class="filter-option"><input type="radio" name="type_${containerId}" value="physical" ${filters.type==='physical'?'checked':''}> 🏘️ Local / Physical</label>
+      <label class="filter-option"><input type="radio" name="type_${containerId}" value="remote" ${filters.type==='remote'?'checked':''}> 💻 Remote / Digital</label>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title">Category</div>
+      <select class="form-select" id="cat_${containerId}" style="font-size:0.875rem;min-height:40px;" onchange="filters.category=this.value;applySearch()">
+        <option value="">All Categories</option>
+        <optgroup label="Local Services">
+          ${NaijaWorksConfig.categories.physical.map(c=>`<option value="${c.id}" ${filters.category===c.id?'selected':''}>${c.icon} ${c.label}</option>`).join('')}
+        </optgroup>
+        <optgroup label="Remote / Digital">
+          ${NaijaWorksConfig.categories.remote.map(c=>`<option value="${c.id}" ${filters.category===c.id?'selected':''}>${c.icon} ${c.label}</option>`).join('')}
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title">Location (State)</div>
+      <select class="form-select" id="state_${containerId}" style="font-size:0.875rem;min-height:40px;" onchange="filters.state=this.value;applySearch()">
+        <option value="">All States</option>
+        ${NaijaWorksConfig.nigerianStates.map(s=>`<option value="${s}" ${filters.state===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title">Price Range (₦)</div>
+      <div class="price-range-inputs">
+        <input type="number" class="price-input" id="minPrice_${containerId}" placeholder="Min" value="${filters.minPrice}" min="0" onchange="filters.minPrice=this.value;applySearch()" />
+        <input type="number" class="price-input" id="maxPrice_${containerId}" placeholder="Max" value="${filters.maxPrice}" min="0" onchange="filters.maxPrice=this.value;applySearch()" />
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title">Minimum Rating</div>
+      ${[4,3,2,1].map(r=>`
+        <label class="filter-option">
+          <input type="radio" name="rating_${containerId}" value="${r}" ${filters.minRating==r?'checked':''} onchange="filters.minRating=this.value;applySearch()">
+          ${'★'.repeat(r)}${'☆'.repeat(5-r)} & above
+        </label>`).join('')}
+      <label class="filter-option">
+        <input type="radio" name="rating_${containerId}" value="" ${!filters.minRating?'checked':''} onchange="filters.minRating='';applySearch()">
+        Any rating
+      </label>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title">Worker Status</div>
+      <label class="filter-option">
+        <input type="checkbox" ${filters.vipOnly?'checked':''} onchange="filters.vipOnly=this.checked;applySearch()">
+        ⭐ VIP Workers Only
+      </label>
+    </div>
+  `;
+
+  // Bind radio for type
+  el.querySelectorAll(`input[name="type_${containerId}"]`).forEach(r => {
+    r.addEventListener('change', () => { filters.type = r.value; applySearch(); });
+  });
+}
+
+buildFilterPanel('desktop-filters');
+buildFilterPanel('mobile-filters');
+
+function applySearch() {
+  filters.q       = document.getElementById('search-input').value.trim();
+  filters.type    = document.getElementById('type-filter').value;
+  filters.sort    = document.getElementById('sort-select')?.value || filters.sort;
+  filters.page    = 1;
+  loadWorkers();
+  updateActiveFilterTags();
+}
+
+function clearAllFilters() {
+  filters = { q:'', type:'all', category:'', state:'', minPrice:'', maxPrice:'', minRating:'', vipOnly:false, sort:'rating', page:1 };
+  document.getElementById('search-input').value = '';
+  document.getElementById('type-filter').value = 'all';
+  buildFilterPanel('desktop-filters');
+  buildFilterPanel('mobile-filters');
+  loadWorkers();
+  updateActiveFilterTags();
+}
+
+function updateActiveFilterTags() {
+  const container = document.getElementById('active-filters');
+  const tags = [];
+  if (filters.q)        tags.push({ label: `"${filters.q}"`,     key: 'q' });
+  if (filters.type !== 'all') tags.push({ label: filters.type === 'physical' ? 'Local' : 'Remote', key: 'type' });
+  if (filters.category) tags.push({ label: filters.category, key: 'category' });
+  if (filters.state)    tags.push({ label: filters.state, key: 'state' });
+  if (filters.vipOnly)  tags.push({ label: 'VIP Only', key: 'vipOnly' });
+  if (filters.minRating) tags.push({ label: `${filters.minRating}★+`, key: 'minRating' });
+
+  container.innerHTML = tags.map(t => `
+    <span class="active-filter-tag">
+      ${t.label}
+      <span class="remove-filter" onclick="removeFilter('${t.key}')">✕</span>
+    </span>`).join('');
+}
+
+function removeFilter(key) {
+  if (key === 'type') filters.type = 'all';
+  else if (key === 'vipOnly') filters.vipOnly = false;
+  else filters[key] = '';
+  buildFilterPanel('desktop-filters');
+  buildFilterPanel('mobile-filters');
+  loadWorkers();
+  updateActiveFilterTags();
+}
+
+async function loadWorkers() {
+  const grid = document.getElementById('workers-grid');
+  grid.innerHTML = Array(6).fill(`<div class="card" style="height:220px;"><div class="skeleton" style="height:100%;"></div></div>`).join('');
+
+  try {
+    const qs = new URLSearchParams();
+    Object.entries(filters).forEach(([k, v]) => { if (v !== '' && v !== false) qs.set(k, v); });
+
+    const res  = await fetch(`/api/v1/workers?${qs.toString()}`);
+    const data = res.ok ? await res.json() : { workers: [], total: 0 };
+
+    renderWorkers(data.workers || []);
+    document.getElementById('results-count').textContent = data.total || data.workers?.length || 0;
+    renderPagination(data.total || 0);
+
+  } catch (e) {
+    renderWorkers([]);
+    document.getElementById('results-count').textContent = 0;
+  }
+}
+
+function renderWorkers(workers) {
+  const grid = document.getElementById('workers-grid');
+  if (!workers.length) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-state-icon">🔍</div>
+        <div class="empty-state-title">No workers found</div>
+        <div class="empty-state-desc">Try adjusting your filters or search terms.</div>
+        <button class="btn btn-ghost" onclick="clearAllFilters()">Clear Filters</button>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = workers.map(w => `
+    <a href="/worker-profile.html?uid=${w.uid}" class="worker-card">
+      <div class="worker-card-top">
+        ${w.profilePhoto
+          ? `<img src="${w.profilePhoto}" class="worker-avatar" alt="${w.fullName}" loading="lazy" />`
+          : `<div class="worker-avatar-placeholder">${getInitials(w.fullName)}</div>`}
+        <div class="worker-info">
+          <div class="worker-name">${w.fullName || 'Worker'}</div>
+          <div class="worker-title">${w.title || (w.serviceCategories?.[0] || 'Service Provider')}</div>
+          <div class="worker-location">📍 ${w.city ? w.city + ', ' : ''}${w.state || 'Nigeria'}</div>
+          <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">
+            ${w.isVIP ? '<span class="badge badge-vip" style="font-size:0.65rem;">VIP</span>' : ''}
+            ${w.remoteAvailable ? '<span class="badge badge-blue" style="font-size:0.65rem;">Remote ✓</span>' : ''}
+            ${w.canTravel ? '<span class="badge badge-green" style="font-size:0.65rem;">Can Travel</span>' : ''}
+          </div>
+        </div>
+      </div>
+      <div class="worker-card-body">
+        <div class="worker-rating">
+          <span class="stars">${'★'.repeat(Math.round(w.ratingAverage||0))}${'☆'.repeat(5-Math.round(w.ratingAverage||0))}</span>
+          <span>${(w.ratingAverage||0).toFixed(1)}</span>
+          <span class="rating-count">(${w.ratingCount||0}) · ${w.completedJobsCount||0} jobs</span>
+        </div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;">
+          <div>
+            <span class="worker-price">₦${(w.basePrice||0).toLocaleString()}</span>
+            <span class="worker-price-label"> starting</span>
+          </div>
+          <span class="badge badge-gray" style="font-size:0.7rem;">${w.pricingModel||'Fixed'}</span>
+        </div>
+      </div>
+    </a>`).join('');
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / PAGE_SIZE);
+  const el = document.getElementById('pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+
+  let html = '';
+  if (filters.page > 1) {
+    html += `<button class="btn btn-ghost btn-sm" onclick="goToPage(${filters.page - 1})">← Prev</button>`;
+  }
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i - filters.page) <= 1) {
+      html += `<button class="btn ${i===filters.page?'btn-primary':'btn-ghost'} btn-sm" onclick="goToPage(${i})">${i}</button>`;
+    } else if (Math.abs(i - filters.page) === 2) {
+      html += `<span style="padding:8px;">…</span>`;
+    }
+  }
+  if (filters.page < pages) {
+    html += `<button class="btn btn-ghost btn-sm" onclick="goToPage(${filters.page + 1})">Next →</button>`;
+  }
+  el.innerHTML = html;
+}
+
+function goToPage(p) {
+  filters.page = p;
+  loadWorkers();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Init
+updateActiveFilterTags();
+loadWorkers();
+</script>
+</body>
+</html>

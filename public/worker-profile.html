@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Worker Profile — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    .profile-layout { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media(min-width:768px) { .profile-layout { grid-template-columns: 300px 1fr; } }
+    .profile-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
+    .profile-cover { height: 120px; background: linear-gradient(135deg, var(--charcoal-900), var(--green-900)); }
+    .profile-photo-wrap { padding: 0 24px; margin-top: -44px; margin-bottom: 16px; }
+    .profile-photo {
+      width: 88px; height: 88px; border-radius: 50%;
+      border: 4px solid white; object-fit: cover;
+      background: linear-gradient(135deg, var(--primary), var(--green-800));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 800; font-size: 2rem; color: white;
+      box-shadow: var(--shadow-md);
+    }
+    .profile-info { padding: 0 24px 24px; }
+    .profile-name { font-size: 1.375rem; font-weight: 800; font-family: var(--font-display); }
+    .profile-title { font-size: 0.9375rem; color: var(--text-secondary); margin: 4px 0 12px; }
+    .profile-meta { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+    .profile-meta-item { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--text-secondary); }
+    .profile-actions { display: flex; flex-direction: column; gap: 10px; padding: 0 24px 24px; }
+
+    /* Offer modal */
+    .offer-price-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* Reviews */
+    .review-item { padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .review-item:last-child { border-bottom: none; }
+    .review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .review-author-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--charcoal-100); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; font-family: var(--font-display); flex-shrink: 0; }
+    .review-author-name { font-weight: 700; font-size: 0.875rem; }
+    .review-date { font-size: 0.75rem; color: var(--text-muted); }
+    .review-text { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
+
+    /* Portfolio */
+    .portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .portfolio-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-md); cursor: pointer; transition: opacity var(--transition-fast); }
+    .portfolio-img:hover { opacity: 0.85; }
+
+    /* Locked contact */
+    .locked-contact { background: var(--charcoal-50); border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: 20px; text-align: center; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo"><div class="nav-logo-icon">N</div>Naija<span>Works</span></a>
+      <div class="nav-actions">
+        <a href="/login.html"  class="btn btn-ghost btn-sm" id="nav-login-btn">Log In</a>
+        <a href="/signup.html" class="btn btn-primary btn-sm" id="nav-signup-btn">Get Started</a>
+        <a href="/client-dashboard.html" class="btn btn-primary btn-sm" id="nav-dashboard-btn" style="display:none">Dashboard</a>
+        <button class="btn btn-ghost btn-sm" id="nav-logout-btn" data-logout style="display:none">Log Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section style="padding:32px 0;background:var(--charcoal-50);min-height:80vh;">
+  <div class="container">
+    <div style="margin-bottom:16px;"><a href="/browse-workers.html" style="color:var(--text-muted);font-size:0.875rem;">← Back to Workers</a></div>
+    <div class="profile-layout" id="profile-content">
+      <!-- Skeleton -->
+      <div class="card" style="height:500px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div class="card" style="height:200px;"><div class="skeleton" style="height:100%;"></div></div>
+        <div class="card" style="height:250px;"><div class="skeleton" style="height:100%;"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Make Offer Modal -->
+<div class="overlay" id="offer-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Make an Offer</span>
+      <button class="modal-close" onclick="closeModal('offer-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="offer-error" style="display:none;background:var(--status-error-bg);border:1px solid #fca5a5;border-radius:var(--radius-md);padding:12px 16px;margin-bottom:16px;font-size:0.875rem;color:var(--status-error);"></div>
+      <div class="form-group">
+        <label class="form-label">Job Title <span class="required">*</span></label>
+        <input type="text" id="offer-job-title" class="form-input" placeholder="e.g. Clean my 3-bedroom apartment" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Job Description <span class="required">*</span></label>
+        <textarea id="offer-job-desc" class="form-input" rows="3" placeholder="Describe the job in detail…"></textarea>
+      </div>
+      <div class="offer-price-wrap">
+        <div class="form-group">
+          <label class="form-label">Your Offer (₦) <span class="required">*</span></label>
+          <input type="number" id="offer-price" class="form-input" placeholder="e.g. 15000" min="500" />
+          <span class="form-hint" id="offer-min-hint"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Work Mode</label>
+          <select id="offer-workmode" class="form-select">
+            <option value="physical">Physical / Local</option>
+            <option value="remote">Remote / Online</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Expected Duration</label>
+        <input type="text" id="offer-duration" class="form-input" placeholder="e.g. 1 day, 2 weeks, 1 month" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Job Location (for physical jobs)</label>
+        <input type="text" id="offer-location" class="form-input" placeholder="e.g. Lekki Phase 1, Lagos" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('offer-modal')">Cancel</button>
+      <button class="btn btn-primary" id="submit-offer-btn" onclick="submitOffer()">Send Offer</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const workerUid = urlParams.get('uid');
+let workerData = null;
+let currentUser = null;
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+if (!workerUid) { window.location.href = '/browse-workers.html'; }
+
+// Load worker profile
+async function loadWorkerProfile() {
+  try {
+    const res = await fetch(`/api/v1/workers/${workerUid}`);
+    if (!res.ok) throw new Error('Worker not found');
+    const data = await res.json();
+    workerData = data.worker;
+    renderProfile(workerData);
+  } catch(e) {
+    document.getElementById('profile-content').innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-state-icon">😕</div>
+        <div class="empty-state-title">Worker not found</div>
+        <div class="empty-state-desc">This profile doesn't exist or has been removed.</div>
+        <a href="/browse-workers.html" class="btn btn-primary">Browse Workers</a>
+      </div>`;
+  }
+}
+
+function renderProfile(w) {
+  const isLoggedIn = !!currentUser;
+  const isOwner    = currentUser?.uid === w.uid;
+  const isClient   = currentUser && !isOwner;
+
+  document.title = `${w.fullName} — NaijaWorks`;
+
+  // Set offer hint
+  if (w.minimumAcceptablePrice) {
+    document.getElementById('offer-min-hint').textContent = `Minimum: ₦${w.minimumAcceptablePrice.toLocaleString()}`;
+  }
+  if (w.pricingModel) document.getElementById('offer-workmode').value = w.remoteAvailable ? 'remote' : 'physical';
+
+  document.getElementById('profile-content').innerHTML = `
+    <!-- Left column -->
+    <div>
+      <div class="profile-card">
+        <div class="profile-cover"></div>
+        <div class="profile-photo-wrap">
+          ${w.profilePhoto
+            ? `<img src="${w.profilePhoto}" class="profile-photo" alt="${w.fullName}" />`
+            : `<div class="profile-photo">${getInitials(w.fullName)}</div>`}
+        </div>
+        <div class="profile-info">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <div class="profile-name">${w.fullName}</div>
+            ${w.isVIP ? '<span class="badge badge-vip">VIP</span>' : ''}
+            ${w.isVerified ? '<span class="badge badge-green">✓ Verified</span>' : ''}
+          </div>
+          <div class="profile-title">${w.title || w.serviceCategories?.[0] || 'Service Provider'}</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;">
+            ${(w.serviceCategories || []).map(c => `<span class="badge badge-gray">${c}</span>`).join('')}
+          </div>
+          <div class="profile-meta">
+            <div class="profile-meta-item">📍 ${w.city ? w.city + ', ' : ''}${w.state || 'Nigeria'}</div>
+            ${w.remoteAvailable ? '<div class="profile-meta-item">💻 Available remotely</div>' : ''}
+            ${w.canTravel ? '<div class="profile-meta-item">✈️ Can travel</div>' : ''}
+            <div class="profile-meta-item">⭐ ${(w.ratingAverage || 0).toFixed(1)} rating (${w.ratingCount || 0} reviews)</div>
+            <div class="profile-meta-item">✅ ${w.completedJobsCount || 0} jobs completed</div>
+            ${w.yearsOfExperience ? `<div class="profile-meta-item">🏆 ${w.yearsOfExperience} years experience</div>` : ''}
+          </div>
+
+          <!-- Pricing -->
+          <div style="background:var(--green-50);border-radius:var(--radius-md);padding:14px;margin-bottom:16px;">
+            <div style="font-size:0.75rem;color:var(--green-800);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Pricing</div>
+            ${w.basePrice ? `<div style="font-size:1.375rem;font-weight:800;font-family:var(--font-display);color:var(--green-800);">₦${w.basePrice.toLocaleString()}<span style="font-size:0.8rem;font-weight:400;color:var(--green-700);"> starting</span></div>` : ''}
+            <div style="font-size:0.8rem;color:var(--green-700);margin-top:4px;">${w.pricingModel || 'Fixed'} pricing</div>
+            ${w.minimumAcceptablePrice ? `<div style="font-size:0.75rem;color:var(--green-700);margin-top:4px;">Min: ₦${w.minimumAcceptablePrice.toLocaleString()}</div>` : ''}
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          ${isClient ? `
+            <button class="btn btn-primary btn-full" onclick="openModal('offer-modal')">🤝 Make an Offer</button>
+            <a href="/browse-workers.html" class="btn btn-ghost btn-full">← Find Other Workers</a>` : ''}
+          ${isOwner ? `
+            <a href="/edit-profile.html" class="btn btn-secondary btn-full">Edit Profile</a>
+            <a href="/worker-dashboard.html" class="btn btn-ghost btn-full">← Dashboard</a>` : ''}
+          ${!isLoggedIn ? `
+            <a href="/login.html" class="btn btn-primary btn-full">Log in to Make an Offer</a>
+            <a href="/signup.html?role=client" class="btn btn-ghost btn-full">Sign Up Free</a>` : ''}
+        </div>
+      </div>
+
+      <!-- Contact info (locked) -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-body">
+          <h4 style="font-size:0.9375rem;margin-bottom:12px;">📞 Contact Info</h4>
+          <div class="locked-contact">
+            <div style="font-size:1.5rem;margin-bottom:8px;">🔒</div>
+            <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px;">Contact details locked</div>
+            <div style="font-size:0.8125rem;color:var(--text-muted);">Fund a contract to unlock phone, WhatsApp, and email.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- About -->
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:1rem;">About</h3></div>
+        <div class="card-body">
+          <p style="font-size:0.9375rem;line-height:1.7;color:var(--text-secondary);">${w.bio || 'This worker hasn\'t added a bio yet.'}</p>
+          ${w.skills?.length ? `
+            <div style="margin-top:16px;">
+              <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:8px;">Skills</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                ${w.skills.map(s => `<span class="badge badge-green">${s}</span>`).join('')}
+              </div>
+            </div>` : ''}
+          ${w.availability ? `
+            <div style="margin-top:16px;">
+              <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:6px;">Availability</div>
+              <div style="font-size:0.875rem;color:var(--text-secondary);">${typeof w.availability === 'string' ? w.availability : 'Flexible'}</div>
+            </div>` : ''}
+        </div>
+      </div>
+
+      <!-- Portfolio -->
+      ${w.portfolioImages?.length ? `
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:1rem;">Portfolio</h3></div>
+        <div class="card-body">
+          <div class="portfolio-grid">
+            ${w.portfolioImages.map(img => `<img src="${img}" class="portfolio-img" loading="lazy" onclick="window.open('${img}','_blank')" />`).join('')}
+          </div>
+        </div>
+      </div>` : ''}
+
+      <!-- Reviews -->
+      <div class="card" id="reviews-card">
+        <div class="card-header">
+          <h3 style="font-size:1rem;">Reviews (${w.ratingCount || 0})</h3>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="color:#f59e0b;font-size:1.1rem;">${'★'.repeat(Math.round(w.ratingAverage||0))}</span>
+            <strong>${(w.ratingAverage||0).toFixed(1)}</strong>
+          </div>
+        </div>
+        <div class="card-body" id="reviews-list">
+          <div style="text-align:center;padding:16px;color:var(--text-muted);">Loading reviews…</div>
+        </div>
+      </div>
+    </div>`;
+
+  // Load reviews
+  loadReviews(w.uid);
+}
+
+async function loadReviews(uid) {
+  try {
+    const res = await fetch(`/api/v1/reviews?workerId=${uid}&limit=10`);
+    const data = await res.json();
+    const reviews = data.reviews || [];
+    const el = document.getElementById('reviews-list');
+    if (!reviews.length) {
+      el.innerHTML = `<div style="text-align:center;padding:16px;color:var(--text-muted);">No reviews yet.</div>`;
+      return;
+    }
+    el.innerHTML = reviews.map(r => `
+      <div class="review-item">
+        <div class="review-header">
+          <div class="review-author-avatar">${getInitials(r.fromUserName || '?')}</div>
+          <div>
+            <div class="review-author-name">${r.fromUserName || 'Anonymous'}</div>
+            <div class="review-date">${renderStars(r.rating)} · ${timeAgo(r.createdAt)}</div>
+          </div>
+        </div>
+        <div class="review-text">${r.reviewText || ''}</div>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('reviews-list').innerHTML = `<div style="text-align:center;color:var(--text-muted);">Could not load reviews.</div>`;
+  }
+}
+
+async function submitOffer() {
+  const errEl = document.getElementById('offer-error');
+  errEl.style.display = 'none';
+
+  const title     = document.getElementById('offer-job-title').value.trim();
+  const desc      = document.getElementById('offer-job-desc').value.trim();
+  const price     = parseFloat(document.getElementById('offer-price').value);
+  const workMode  = document.getElementById('offer-workmode').value;
+  const duration  = document.getElementById('offer-duration').value.trim();
+  const location  = document.getElementById('offer-location').value.trim();
+
+  if (!title || !desc || !price || price < 500) {
+    errEl.textContent = 'Please fill in all required fields. Minimum offer: ₦500.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (workerData?.minimumAcceptablePrice && price < workerData.minimumAcceptablePrice) {
+    errEl.textContent = `This worker's minimum price is ₦${workerData.minimumAcceptablePrice.toLocaleString()}.`;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('submit-offer-btn');
+  setButtonLoading(btn, true, 'Sending…');
+
+  try {
+    const data = await api.post('/api/v1/offers', {
+      workerId: workerUid,
+      jobTitle: title,
+      jobDescription: desc,
+      offeredPrice: price,
+      workMode,
+      duration,
+      location,
+    });
+
+    closeModal('offer-modal');
+    showToast('Offer sent! The worker will respond shortly.', 'success', 'Offer Sent');
+    setTimeout(() => { window.location.href = '/offers.html'; }, 2000);
+  } catch(e) {
+    errEl.textContent = e.message || 'Failed to send offer. Please try again.';
+    errEl.style.display = 'block';
+    setButtonLoading(btn, false);
+  }
+}
+
+// Auth state
+firebase.auth().onAuthStateChanged(async (user) => {
+  currentUser = user;
+  updateNavForAuth(!!user);
+  if (user && workerData) renderProfile(workerData); // Re-render with auth context
+});
+
+loadWorkerProfile();
+</script>
+</body>
+</html>
