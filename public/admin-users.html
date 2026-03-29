@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Users — NaijaWorks Admin</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <style>.admin-sidebar{background:#0d0f1a;}</style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar admin-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav">
+      <a href="/admin-dashboard.html"   class="sidebar-link"><span class="icon">📊</span>Dashboard</a>
+      <a href="/admin-users.html"       class="sidebar-link active"><span class="icon">👥</span>All Users</a>
+      <a href="/admin-workers.html"     class="sidebar-link"><span class="icon">👷</span>Workers</a>
+      <a href="/admin-clients.html"     class="sidebar-link"><span class="icon">🏢</span>Clients</a>
+      <a href="/admin-jobs.html"        class="sidebar-link"><span class="icon">💼</span>Jobs</a>
+      <a href="/admin-withdrawals.html" class="sidebar-link"><span class="icon">🏦</span>Withdrawals</a>
+      <a href="/admin-disputes.html"    class="sidebar-link"><span class="icon">⚖️</span>Disputes</a>
+      <a href="/admin-payments.html"    class="sidebar-link"><span class="icon">💳</span>Payments</a>
+      <a href="/admin-wallets.html"     class="sidebar-link"><span class="icon">💰</span>Wallets</a>
+      <a href="/admin-categories.html"  class="sidebar-link"><span class="icon">📋</span>Categories</a>
+      <a href="/admin-settings.html"    class="sidebar-link"><span class="icon">⚙️</span>Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user"><div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Admin</div><div class="sidebar-user-role" style="color:#ef4444;">Administrator</div></div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Manage Users</span>
+      </div>
+    </div>
+
+    <div class="dash-content">
+      <div class="page-title">Users</div>
+
+      <!-- Filters -->
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+        <input type="text" id="search-input" class="form-input" placeholder="Search name, email, phone…" style="max-width:280px;min-height:40px;" oninput="filterUsers()" />
+        <select id="role-filter" class="form-select" style="width:auto;min-height:40px;" onchange="filterUsers()">
+          <option value="all">All Roles</option>
+          <option value="worker">Workers</option>
+          <option value="client">Clients</option>
+          <option value="admin">Admins</option>
+        </select>
+        <select id="status-filter" class="form-select" style="width:auto;min-height:40px;" onchange="filterUsers()">
+          <option value="all">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="suspended">Suspended</option>
+          <option value="banned">Banned</option>
+        </select>
+        <span id="results-label" style="line-height:40px;font-size:0.875rem;color:var(--text-muted);"></span>
+      </div>
+
+      <div class="card">
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User</th><th>Role</th><th>Location</th><th>VIP</th><th>Status</th><th>Joined</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:32px;"><div class="spinner dark" style="margin:0 auto 12px;"></div>Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- User Detail Modal -->
+<div class="overlay" id="user-modal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-user-title">User Details</span>
+      <button class="modal-close" onclick="document.getElementById('user-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-user-body"></div>
+    <div class="modal-footer" id="modal-user-footer"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+let allUsers = [];
+
+async function loadUsers() {
+  const tbody = document.getElementById('users-tbody');
+  try {
+    const data = await api.get('/api/v1/admin/users?limit=100');
+    allUsers = data.users || [];
+    renderUsers(allUsers);
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--status-error);">Failed to load users</td></tr>`;
+  }
+}
+
+function filterUsers() {
+  const q      = document.getElementById('search-input').value.toLowerCase();
+  const role   = document.getElementById('role-filter').value;
+  const status = document.getElementById('status-filter').value;
+
+  let filtered = allUsers;
+  if (role !== 'all')   filtered = filtered.filter(u => u.role === role);
+  if (status !== 'all') filtered = filtered.filter(u => (u.accountStatus || 'active') === status);
+  if (q) filtered = filtered.filter(u =>
+    u.fullName?.toLowerCase().includes(q) ||
+    u.email?.toLowerCase().includes(q) ||
+    u.phone?.includes(q)
+  );
+
+  renderUsers(filtered);
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users-tbody');
+  document.getElementById('results-label').textContent = `${users.length} user${users.length !== 1 ? 's' : ''}`;
+
+  if (!users.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">No users found</td></tr>`;
+    return;
+  }
+
+  const statusStyles = { active:'status-completed', suspended:'status-pending', banned:'status-cancelled' };
+  const roleColors   = { worker:'badge-green', client:'badge-blue', admin:'badge-red' };
+
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--green-800));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.8rem;flex-shrink:0;">${getInitials(u.fullName)}</div>
+          <div>
+            <div style="font-weight:600;">${u.fullName || '—'}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">${u.email || ''}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="badge ${roleColors[u.role] || 'badge-gray'}">${u.role || '—'}</span></td>
+      <td style="font-size:0.875rem;">${u.city ? u.city + ', ' : ''}${u.state || '—'}</td>
+      <td>${u.isVIP ? '<span class="badge badge-vip">VIP</span>' : '—'}</td>
+      <td><span class="status-pill ${statusStyles[u.accountStatus || 'active']}">${u.accountStatus || 'active'}</span></td>
+      <td style="font-size:0.8125rem;">${timeAgo(u.createdAt)}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="viewUser('${u.uid}')">View</button>
+          ${u.accountStatus !== 'suspended' ? `<button class="btn btn-ghost btn-sm" style="color:var(--status-warning);" onclick="suspendUser('${u.uid}')">Suspend</button>` : `<button class="btn btn-ghost btn-sm" style="color:var(--status-success);" onclick="activateUser('${u.uid}')">Activate</button>`}
+          ${u.role !== 'admin' ? `<button class="btn btn-ghost btn-sm" style="color:var(--status-error);" onclick="banUser('${u.uid}')">Ban</button>` : ''}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+async function viewUser(uid) {
+  document.getElementById('user-modal').classList.add('open');
+  document.getElementById('modal-user-body').innerHTML = `<div style="text-align:center;padding:24px;"><div class="spinner dark" style="margin:0 auto;"></div></div>`;
+  try {
+    const data = await api.get(`/api/v1/admin/users/${uid}`);
+    const u = data.user;
+    const w = data.wallet;
+    document.getElementById('modal-user-title').textContent = u.fullName;
+    document.getElementById('modal-user-body').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:12px;">
+          <div style="font-size:0.75rem;color:var(--text-muted);">Available Balance</div>
+          <div style="font-weight:800;font-family:var(--font-display);">${formatNaira(w?.availableBalance||0)}</div>
+        </div>
+        <div style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:12px;">
+          <div style="font-size:0.75rem;color:var(--text-muted);">Total Earned</div>
+          <div style="font-weight:800;font-family:var(--font-display);color:var(--status-success);">${formatNaira(w?.totalEarned||0)}</div>
+        </div>
+      </div>
+      <div style="font-size:0.875rem;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--text-muted);">Email</span><span style="font-weight:600;">${u.email||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--text-muted);">Phone</span><span>${u.phone||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--text-muted);">Role</span><span class="badge ${u.role==='worker'?'badge-green':'badge-blue'}">${u.role}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--text-muted);">Status</span><span class="status-pill status-${u.accountStatus==='active'?'completed':u.accountStatus==='suspended'?'pending':'cancelled'}">${u.accountStatus||'active'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--text-muted);">VIP</span><span>${u.isVIP?'⭐ Active until '+formatDate(u.vipEndDate):'Not VIP'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+          <span style="color:var(--text-muted);">Commission</span><span>${Math.round((u.commissionRate||0.20)*100)}%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;">
+          <span style="color:var(--text-muted);">Joined</span><span>${formatDate(u.createdAt)}</span>
+        </div>
+      </div>`;
+    document.getElementById('modal-user-footer').innerHTML = `
+      <button class="btn btn-ghost" onclick="document.getElementById('user-modal').classList.remove('open')">Close</button>
+      <button class="btn btn-secondary btn-sm" onclick="promptManualCredit('${uid}')">+ Credit Wallet</button>
+      ${u.role === 'worker' ? `<a href="/worker-profile.html?uid=${uid}" target="_blank" class="btn btn-ghost btn-sm">View Profile</a>` : ''}`;
+  } catch(e) {
+    document.getElementById('modal-user-body').innerHTML = `<div style="text-align:center;padding:24px;color:var(--status-error);">Failed to load</div>`;
+  }
+}
+
+async function suspendUser(uid) {
+  const reason = prompt('Reason for suspension (shown to user):');
+  if (reason === null) return;
+  try {
+    await api.patch(`/api/v1/admin/users/${uid}/status`, { status: 'suspended', reason });
+    showToast('User suspended', 'info');
+    loadUsers();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function activateUser(uid) {
+  if (!confirm('Activate this user?')) return;
+  try {
+    await api.patch(`/api/v1/admin/users/${uid}/status`, { status: 'active' });
+    showToast('User activated', 'success');
+    loadUsers();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function banUser(uid) {
+  const reason = prompt('Reason for ban (shown to user):');
+  if (!reason) return;
+  if (!confirm(`Permanently ban this user? Reason: "${reason}"`)) return;
+  try {
+    await api.patch(`/api/v1/admin/users/${uid}/status`, { status: 'banned', reason });
+    showToast('User banned', 'warning');
+    loadUsers();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function promptManualCredit(uid) {
+  const amount = prompt('Amount to credit (₦):');
+  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) return;
+  const note = prompt('Note (optional):') || 'Manual admin credit';
+  try {
+    await api.post(`/api/v1/admin/wallets/${uid}/credit`, { amount: parseFloat(amount), note });
+    showToast(`₦${parseFloat(amount).toLocaleString()} credited`, 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+// Pre-select role from URL
+const urlRole = new URLSearchParams(window.location.search).get('role');
+if (urlRole) document.getElementById('role-filter').value = urlRole;
+const urlStatus = new URLSearchParams(window.location.search).get('status');
+if (urlStatus) document.getElementById('status-filter').value = urlStatus;
+
+(async () => {
+  await initDashboard('admin');
+  await loadUsers();
+  if (urlRole || urlStatus) filterUsers();
+})();
+</script>
+</body>
+</html>

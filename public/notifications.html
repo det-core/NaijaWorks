@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notifications — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav" id="sidebar-nav-links"></nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user"><div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role" id="sidebar-user-role"></div></div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Notifications</span>
+      </div>
+      <div class="topbar-right">
+        <button onclick="markAll()" class="btn btn-ghost btn-sm">Mark all read</button>
+      </div>
+    </div>
+
+    <div class="dash-content">
+      <div class="page-title">Notifications</div>
+      <div class="page-subtitle">All your platform updates and alerts</div>
+
+      <div class="card" style="padding:0;" id="notif-full-list">
+        <div style="text-align:center;padding:32px;"><div class="spinner dark" style="margin:0 auto 12px;"></div>Loading…</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+const typeIcons = {
+  welcome:'🎉', new_offer:'🤝', offer_accepted:'✅', offer_declined:'❌',
+  counter_offer:'↩️', contract_funded:'💰', payment_success:'✅', payment_released:'💸',
+  work_done:'🎉', withdrawal_requested:'🏦', withdrawal_approved:'✅', withdrawal_rejected:'⚠️',
+  withdrawal_failed:'❌', dispute_raised:'⚠️', dispute_resolved:'⚖️', vip_activated:'⭐',
+  account_status:'🔒', wallet_credit:'💰', default:'🔔'
+};
+
+async function loadNotifications() {
+  const listEl = document.getElementById('notif-full-list');
+  try {
+    const token = await getAuthToken();
+    const res   = await fetch('/api/v1/notifications?limit=50', { headers: { 'Authorization': `Bearer ${token}` } });
+    const data  = await res.json();
+    const notifs = data.notifications || [];
+
+    if (!notifs.length) {
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔔</div><div class="empty-state-title">No notifications yet</div><div class="empty-state-desc">You'll see updates about offers, contracts, payments and more here.</div></div>`;
+      return;
+    }
+
+    listEl.innerHTML = notifs.map(n => `
+      <div class="notif-item ${n.read ? '' : 'unread'}" id="notif-${n.id}" onclick="markRead('${n.id}')">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--green-50);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">${typeIcons[n.type] || typeIcons.default}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:0.9375rem;margin-bottom:3px;">${n.title || 'Notification'}</div>
+            <div style="font-size:0.875rem;color:var(--text-secondary);line-height:1.5;">${n.message || ''}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;">${timeAgo(n.createdAt)}</div>
+          </div>
+          ${!n.read ? '<div style="width:8px;height:8px;background:var(--primary);border-radius:50%;flex-shrink:0;margin-top:6px;"></div>' : ''}
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    listEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--status-error);">Failed to load notifications</div>`;
+  }
+}
+
+async function markRead(id) {
+  const el = document.getElementById(`notif-${id}`);
+  el?.classList.remove('unread');
+  const dot = el?.querySelector('div[style*="background:var(--primary)"]');
+  dot?.remove();
+  try {
+    const token = await getAuthToken();
+    await fetch(`/api/v1/notifications/${id}/read`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+  } catch(e) {}
+}
+
+async function markAll() {
+  try {
+    const token = await getAuthToken();
+    await fetch('/api/v1/notifications/mark-all-read', { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+    document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+    showToast('All notifications marked as read', 'success');
+  } catch(e) {}
+}
+
+(async () => {
+  await initDashboard();
+  const nav = document.getElementById('sidebar-nav-links');
+  const base = dashUser.role === 'worker' ? '/worker-dashboard.html' : '/client-dashboard.html';
+  nav.innerHTML = `
+    <a href="${base}" class="sidebar-link"><span class="icon">🏠</span>Dashboard</a>
+    <a href="/notifications.html" class="sidebar-link active"><span class="icon">🔔</span>Notifications</a>`;
+  loadNotifications();
+})();
+</script>
+</body>
+</html>

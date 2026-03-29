@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <style>
+    .admin-sidebar { background: #0d0f1a; }
+    .admin-sidebar .sidebar-logo { border-bottom-color: rgba(255,255,255,0.05); }
+    .admin-badge { background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: auto; }
+    .metric-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .metric-card.green::before  { background: var(--primary); }
+    .metric-card.blue::before   { background: #3b82f6; }
+    .metric-card.yellow::before { background: #f59e0b; }
+    .metric-card.red::before    { background: #ef4444; }
+    .metric-card.purple::before { background: #8b5cf6; }
+    .metric-icon { font-size: 1.75rem; margin-bottom: 8px; }
+    .metric-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .metric-value { font-family: var(--font-display); font-weight: 800; font-size: 2rem; line-height: 1.1; }
+    .metric-sub   { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+    .quick-action {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      background: white;
+    }
+    .quick-action:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); color: var(--primary); }
+    .quick-action-icon { font-size: 1.25rem; width: 40px; height: 40px; background: var(--charcoal-50); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .quick-action-label { font-weight: 600; font-size: 0.9rem; }
+    .quick-action-sub   { font-size: 0.75rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+
+  <!-- Admin Sidebar -->
+  <aside class="dash-sidebar admin-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span> <span style="font-size:0.65rem;background:#ef4444;color:white;padding:2px 6px;border-radius:4px;margin-left:4px;font-weight:800;">ADMIN</span></a>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Overview</div>
+      <a href="/admin-dashboard.html"   class="sidebar-link active"><span class="icon">📊</span>Dashboard</a>
+      <a href="/admin-analytics.html"   class="sidebar-link"><span class="icon">📈</span>Analytics</a>
+
+      <div class="sidebar-section-label">Users</div>
+      <a href="/admin-users.html"       class="sidebar-link"><span class="icon">👥</span>All Users</a>
+      <a href="/admin-workers.html"     class="sidebar-link"><span class="icon">👷</span>Workers</a>
+      <a href="/admin-clients.html"     class="sidebar-link"><span class="icon">🏢</span>Clients</a>
+
+      <div class="sidebar-section-label">Marketplace</div>
+      <a href="/admin-jobs.html"        class="sidebar-link"><span class="icon">💼</span>Jobs</a>
+      <a href="/admin-contracts.html"   class="sidebar-link"><span class="icon">📄</span>Contracts</a>
+      <a href="/admin-disputes.html"    class="sidebar-link"><span class="icon">⚖️</span>Disputes <span class="admin-badge" id="badge-disputes">0</span></a>
+
+      <div class="sidebar-section-label">Finance</div>
+      <a href="/admin-payments.html"    class="sidebar-link"><span class="icon">💳</span>Payments</a>
+      <a href="/admin-wallets.html"     class="sidebar-link"><span class="icon">💰</span>Wallets</a>
+      <a href="/admin-withdrawals.html" class="sidebar-link"><span class="icon">🏦</span>Withdrawals <span class="admin-badge" id="badge-withdrawals">0</span></a>
+
+      <div class="sidebar-section-label">Config</div>
+      <a href="/admin-categories.html"  class="sidebar-link"><span class="icon">📋</span>Categories</a>
+      <a href="/admin-settings.html"    class="sidebar-link"><span class="icon">⚙️</span>Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Admin</div><div class="sidebar-user-role" style="color:#ef4444;">Administrator</div></div>
+      </div>
+      <a class="sidebar-link" href="/" target="_blank"><span class="icon">🌐</span>View Site</a>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Admin Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <span style="font-size:0.8rem;color:var(--text-muted);" id="last-updated"></span>
+        <button onclick="loadAll()" class="btn btn-ghost btn-sm">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <div class="dash-content">
+      <div class="page-title">Platform Overview</div>
+      <div class="page-subtitle" id="dash-date"></div>
+
+      <!-- Key Metrics -->
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px;" id="metrics-grid">
+        <div class="metric-card green"><div class="skeleton" style="height:80px;"></div></div>
+        <div class="metric-card blue"><div class="skeleton" style="height:80px;"></div></div>
+        <div class="metric-card yellow"><div class="skeleton" style="height:80px;"></div></div>
+        <div class="metric-card red"><div class="skeleton" style="height:80px;"></div></div>
+        <div class="metric-card purple"><div class="skeleton" style="height:80px;"></div></div>
+        <div class="metric-card green"><div class="skeleton" style="height:80px;"></div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr;gap:24px;" id="admin-cols">
+
+        <!-- Pending Withdrawals -->
+        <div class="card">
+          <div class="card-header">
+            <h3 style="font-size:1rem;">⏳ Pending Withdrawals</h3>
+            <a href="/admin-withdrawals.html" class="btn btn-ghost btn-sm">Manage All →</a>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Worker</th><th>Amount</th><th>Fee</th><th>Net</th><th>Bank</th><th>Date</th><th></th></tr></thead>
+              <tbody id="pending-withdrawals-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Open Disputes -->
+        <div class="card">
+          <div class="card-header">
+            <h3 style="font-size:1rem;">⚖️ Open Disputes</h3>
+            <a href="/admin-disputes.html" class="btn btn-ghost btn-sm">Manage All →</a>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Contract</th><th>Raised By</th><th>Reason</th><th>Date</th><th></th></tr></thead>
+              <tbody id="disputes-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Users -->
+        <div class="card">
+          <div class="card-header">
+            <h3 style="font-size:1rem;">👥 Recent Sign Ups</h3>
+            <a href="/admin-users.html" class="btn btn-ghost btn-sm">All Users →</a>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Status</th><th>Joined</th></tr></thead>
+              <tbody id="recent-users-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Actions -->
+      <div style="margin-top:24px;">
+        <h3 style="font-size:1rem;margin-bottom:16px;">Quick Actions</h3>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;" id="quick-actions-grid">
+          <a href="/admin-withdrawals.html?status=pending" class="quick-action">
+            <div class="quick-action-icon">🏦</div>
+            <div><div class="quick-action-label">Process Withdrawals</div><div class="quick-action-sub">Review pending requests</div></div>
+          </a>
+          <a href="/admin-disputes.html?status=open" class="quick-action">
+            <div class="quick-action-icon">⚖️</div>
+            <div><div class="quick-action-label">Resolve Disputes</div><div class="quick-action-sub">Open cases need review</div></div>
+          </a>
+          <a href="/admin-users.html?status=suspended" class="quick-action">
+            <div class="quick-action-icon">🔒</div>
+            <div><div class="quick-action-label">Suspended Users</div><div class="quick-action-sub">Review account flags</div></div>
+          </a>
+          <a href="/admin-categories.html" class="quick-action">
+            <div class="quick-action-icon">📋</div>
+            <div><div class="quick-action-label">Manage Categories</div><div class="quick-action-sub">Add or edit service types</div></div>
+          </a>
+          <a href="/admin-settings.html" class="quick-action">
+            <div class="quick-action-icon">⚙️</div>
+            <div><div class="quick-action-label">Platform Settings</div><div class="quick-action-sub">Fees, VIP, branding</div></div>
+          </a>
+          <a href="/browse-workers.html" target="_blank" class="quick-action">
+            <div class="quick-action-icon">🌐</div>
+            <div><div class="quick-action-label">View Public Site</div><div class="quick-action-sub">See what users see</div></div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-NG', { dateStyle: 'full' });
+
+// Two-col on large screens
+const style = document.createElement('style');
+style.textContent = `
+  @media(min-width:640px){#metrics-grid{grid-template-columns:repeat(3,1fr);}}
+  @media(min-width:1024px){#admin-cols{grid-template-columns:1fr 1fr;}}
+  @media(min-width:768px){#quick-actions-grid{grid-template-columns:repeat(3,1fr);}}
+`;
+document.head.appendChild(style);
+
+async function loadAll() {
+  await Promise.all([loadStats(), loadPendingWithdrawals(), loadDisputes(), loadRecentUsers()]);
+  document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-NG');
+}
+
+async function loadStats() {
+  try {
+    const [statsRes, analyticsRes] = await Promise.all([
+      api.get('/api/v1/admin/stats'),
+      api.get('/api/v1/admin/analytics'),
+    ]);
+    const s = statsRes.stats;
+    const a = analyticsRes.analytics;
+
+    document.getElementById('badge-withdrawals').textContent = s.pendingWithdrawals || 0;
+
+    document.getElementById('metrics-grid').innerHTML = `
+      <div class="metric-card green">
+        <div class="metric-icon">👥</div>
+        <div class="metric-label">Total Users</div>
+        <div class="metric-value">${s.totalUsers?.toLocaleString() || 0}</div>
+        <div class="metric-sub">+${a.newUsers30d || 0} this month</div>
+      </div>
+      <div class="metric-card blue">
+        <div class="metric-icon">👷</div>
+        <div class="metric-label">Workers</div>
+        <div class="metric-value">${s.totalWorkers?.toLocaleString() || 0}</div>
+        <div class="metric-sub">${s.totalClients || 0} clients</div>
+      </div>
+      <div class="metric-card green">
+        <div class="metric-icon">💰</div>
+        <div class="metric-label">Platform Revenue</div>
+        <div class="metric-value" style="font-size:1.5rem;">${formatNaira(s.totalRevenue || 0)}</div>
+        <div class="metric-sub">+${formatNaira(a.revenue30d || 0)} (30d)</div>
+      </div>
+      <div class="metric-card yellow">
+        <div class="metric-icon">📄</div>
+        <div class="metric-label">Contracts</div>
+        <div class="metric-value">${s.totalContracts?.toLocaleString() || 0}</div>
+        <div class="metric-sub">${s.completedContracts || 0} completed</div>
+      </div>
+      <div class="metric-card red">
+        <div class="metric-icon">🏦</div>
+        <div class="metric-label">Pending Withdrawals</div>
+        <div class="metric-value">${s.pendingWithdrawals || 0}</div>
+        <div class="metric-sub">Awaiting processing</div>
+      </div>
+      <div class="metric-card purple">
+        <div class="metric-icon">💼</div>
+        <div class="metric-label">Total Jobs</div>
+        <div class="metric-value">${s.totalJobs?.toLocaleString() || 0}</div>
+        <div class="metric-sub">${s.activeContracts || 0} active now</div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('metrics-grid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--status-error);">Failed to load stats. Check admin credentials.</div>`;
+  }
+}
+
+async function loadPendingWithdrawals() {
+  const tbody = document.getElementById('pending-withdrawals-tbody');
+  try {
+    const data = await api.get('/api/v1/admin/withdrawals?status=pending');
+    const list = (data.withdrawals || []).slice(0, 5);
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">No pending withdrawals ✓</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(w => `
+      <tr>
+        <td style="font-weight:600;">${w.accountName || '—'}</td>
+        <td>${formatNaira(w.amount)}</td>
+        <td style="color:var(--status-error);">-${formatNaira(w.fee)}</td>
+        <td style="font-weight:700;color:var(--status-success);">${formatNaira(w.netAmount)}</td>
+        <td>${w.bankName || '—'}</td>
+        <td>${timeAgo(w.requestedAt)}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-primary btn-sm" onclick="approveWithdrawal('${w.id}')">✓ Approve</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--status-error);" onclick="rejectWithdrawal('${w.id}')">✕</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--status-error);">Failed to load</td></tr>`;
+  }
+}
+
+async function loadDisputes() {
+  const tbody = document.getElementById('disputes-tbody');
+  try {
+    const data = await api.get('/api/v1/admin/disputes?status=open');
+    const list = (data.disputes || []).slice(0, 5);
+    document.getElementById('badge-disputes').textContent = data.total || 0;
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);">No open disputes ✓</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(d => `
+      <tr>
+        <td><a href="/admin-contracts.html?id=${d.contractId}" style="color:var(--primary);font-weight:600;">${d.contractId?.slice(0,8)}…</a></td>
+        <td>${d.raisedBy === d.clientId ? 'Client' : 'Worker'}</td>
+        <td>${truncate(d.reason || '—', 50)}</td>
+        <td>${timeAgo(d.createdAt)}</td>
+        <td><a href="/admin-disputes.html?id=${d.id}" class="btn btn-ghost btn-sm">Review →</a></td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--status-error);">Failed to load</td></tr>`;
+  }
+}
+
+async function loadRecentUsers() {
+  const tbody = document.getElementById('recent-users-tbody');
+  try {
+    const data = await api.get('/api/v1/admin/users?limit=8');
+    const list = data.users || [];
+    if (!list.length) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);">No users yet</td></tr>`; return; }
+    const statusColors = { active:'status-completed', suspended:'status-pending', banned:'status-cancelled' };
+    tbody.innerHTML = list.map(u => `
+      <tr>
+        <td>
+          <div style="font-weight:600;">${u.fullName || '—'}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">${u.phone || ''}</div>
+        </td>
+        <td><span class="badge ${u.role === 'worker' ? 'badge-green' : u.role === 'admin' ? 'badge-red' : 'badge-blue'}">${u.role}</span></td>
+        <td style="font-size:0.875rem;">${u.email || '—'}</td>
+        <td><span class="status-pill ${statusColors[u.accountStatus] || 'status-draft'}">${u.accountStatus || 'active'}</span></td>
+        <td>${timeAgo(u.createdAt)}</td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--status-error);">Failed to load</td></tr>`;
+  }
+}
+
+async function approveWithdrawal(id) {
+  if (!confirm('Approve this withdrawal?')) return;
+  try {
+    await api.patch(`/api/v1/admin/withdrawals/${id}/approve`, { notes: 'Approved via admin dashboard' });
+    showToast('Withdrawal approved!', 'success');
+    loadPendingWithdrawals();
+    loadStats();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function rejectWithdrawal(id) {
+  const reason = prompt('Reason for rejection:');
+  if (reason === null) return;
+  try {
+    await api.patch(`/api/v1/admin/withdrawals/${id}/reject`, { reason });
+    showToast('Withdrawal rejected and refunded', 'info');
+    loadPendingWithdrawals();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+(async () => {
+  await initDashboard('admin');
+  loadAll();
+})();
+</script>
+</body>
+</html>

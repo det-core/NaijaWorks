@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disputes — NaijaWorks Admin</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <style>.admin-sidebar{background:#0d0f1a;}</style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar admin-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav">
+      <a href="/admin-dashboard.html"   class="sidebar-link"><span class="icon">📊</span>Dashboard</a>
+      <a href="/admin-users.html"       class="sidebar-link"><span class="icon">👥</span>Users</a>
+      <a href="/admin-withdrawals.html" class="sidebar-link"><span class="icon">🏦</span>Withdrawals</a>
+      <a href="/admin-disputes.html"    class="sidebar-link active"><span class="icon">⚖️</span>Disputes</a>
+      <a href="/admin-payments.html"    class="sidebar-link"><span class="icon">💳</span>Payments</a>
+      <a href="/admin-categories.html"  class="sidebar-link"><span class="icon">📋</span>Categories</a>
+      <a href="/admin-settings.html"    class="sidebar-link"><span class="icon">⚙️</span>Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user"><div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Admin</div><div class="sidebar-user-role" style="color:#ef4444;">Administrator</div></div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Disputes</span>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+        <div><div class="page-title">Disputes</div><div class="page-subtitle">Review and resolve platform disputes</div></div>
+        <select id="status-filter" class="form-select" style="width:auto;min-height:40px;" onchange="loadDisputes()">
+          <option value="open">Open</option>
+          <option value="resolved">Resolved</option>
+          <option value="all">All</option>
+        </select>
+      </div>
+
+      <div id="disputes-list" style="display:flex;flex-direction:column;gap:16px;"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Resolve Modal -->
+<div class="overlay" id="resolve-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Resolve Dispute</span>
+      <button class="modal-close" onclick="document.getElementById('resolve-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="dispute-detail" style="background:var(--charcoal-50);border-radius:var(--radius-md);padding:14px;margin-bottom:16px;font-size:0.875rem;"></div>
+      <div class="form-group">
+        <label class="form-label">Decision / Resolution <span class="required">*</span></label>
+        <textarea id="resolve-decision" class="form-input" rows="3" placeholder="Describe your decision clearly…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Winner</label>
+        <select id="resolve-winner" class="form-select">
+          <option value="">No clear winner / Split</option>
+          <option value="client">Client wins — refund client</option>
+          <option value="worker">Worker wins — release payment</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Internal Notes</label>
+        <textarea id="resolve-notes" class="form-input" rows="2" placeholder="Internal admin notes (not shown to users)"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('resolve-modal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" id="submit-resolve-btn" onclick="submitResolve()">⚖️ Resolve Dispute</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+let activeDisputeId = null;
+
+async function loadDisputes() {
+  const listEl = document.getElementById('disputes-list');
+  const status = document.getElementById('status-filter').value;
+  listEl.innerHTML = `<div style="text-align:center;padding:40px;"><div class="spinner dark" style="margin:0 auto 12px;"></div>Loading…</div>`;
+  try {
+    const data = await api.get(`/api/v1/admin/disputes?status=${status}`);
+    const disputes = data.disputes || [];
+    if (!disputes.length) {
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚖️</div><div class="empty-state-title">No ${status} disputes</div></div>`;
+      return;
+    }
+    listEl.innerHTML = disputes.map(d => `
+      <div class="card">
+        <div style="padding:20px 24px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+            <div>
+              <div style="font-weight:700;font-size:1rem;font-family:var(--font-display);">Dispute — Contract ${d.contractId?.slice(0,12)}…</div>
+              <div style="font-size:0.8125rem;color:var(--text-muted);margin-top:2px;">Raised by: ${d.raisedBy === d.clientId ? '👤 Client' : '👷 Worker'} · ${timeAgo(d.createdAt)}</div>
+            </div>
+            <span class="status-pill ${d.status === 'open' ? 'status-dispute' : 'status-completed'}">${d.status}</span>
+          </div>
+          <div style="background:var(--status-warning-bg);border-left:4px solid var(--status-warning);padding:12px 16px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-bottom:12px;">
+            <div style="font-size:0.8rem;font-weight:700;color:#92400e;margin-bottom:4px;">Reason</div>
+            <div style="font-size:0.9rem;color:#b45309;">${d.reason || '—'}</div>
+          </div>
+          ${d.evidence ? `<div style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:12px;"><strong>Evidence:</strong> ${d.evidence}</div>` : ''}
+          ${d.adminDecision ? `
+            <div style="background:var(--green-50);border-left:4px solid var(--primary);padding:12px 16px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;">
+              <div style="font-size:0.8rem;font-weight:700;color:var(--green-800);">Admin Decision</div>
+              <div style="font-size:0.875rem;color:var(--green-700);">${d.adminDecision}</div>
+            </div>` : ''}
+        </div>
+        ${d.status === 'open' ? `
+          <div style="padding:12px 24px;border-top:1px solid var(--border);">
+            <button class="btn btn-primary btn-sm" onclick="openResolveModal('${d.id}','${d.reason?.replace(/'/g,'\\'')}')">⚖️ Resolve This Dispute</button>
+          </div>` : ''}
+      </div>`).join('');
+  } catch(e) {
+    listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Failed to load</div><button class="btn btn-ghost" onclick="loadDisputes()">Retry</button></div>`;
+  }
+}
+
+function openResolveModal(id, reason) {
+  activeDisputeId = id;
+  document.getElementById('dispute-detail').textContent = `Reason: ${reason}`;
+  document.getElementById('resolve-decision').value = '';
+  document.getElementById('resolve-winner').value = '';
+  document.getElementById('resolve-notes').value = '';
+  document.getElementById('resolve-modal').classList.add('open');
+}
+
+async function submitResolve() {
+  const decision = document.getElementById('resolve-decision').value.trim();
+  const winner   = document.getElementById('resolve-winner').value;
+  const notes    = document.getElementById('resolve-notes').value.trim();
+  if (!decision) { showToast('Please enter a decision', 'warning'); return; }
+
+  const btn = document.getElementById('submit-resolve-btn');
+  setButtonLoading(btn, true, 'Resolving…');
+  try {
+    await api.patch(`/api/v1/admin/disputes/${activeDisputeId}/resolve`, { decision, winner, notes });
+    document.getElementById('resolve-modal').classList.remove('open');
+    showToast('Dispute resolved. Both parties have been notified.', 'success');
+    loadDisputes();
+  } catch(e) {
+    showToast(e.message, 'error');
+    setButtonLoading(btn, false);
+  }
+}
+
+(async () => {
+  await initDashboard('admin');
+  const urlStatus = new URLSearchParams(window.location.search).get('status');
+  if (urlStatus) document.getElementById('status-filter').value = urlStatus;
+  loadDisputes();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — NaijaWorks Admin</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <style>.admin-sidebar{background:#0d0f1a;}</style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar admin-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav">
+      <a href="/admin-dashboard.html"   class="sidebar-link"><span class="icon">📊</span>Dashboard</a>
+      <a href="/admin-users.html"       class="sidebar-link"><span class="icon">👥</span>Users</a>
+      <a href="/admin-withdrawals.html" class="sidebar-link"><span class="icon">🏦</span>Withdrawals</a>
+      <a href="/admin-disputes.html"    class="sidebar-link"><span class="icon">⚖️</span>Disputes</a>
+      <a href="/admin-payments.html"    class="sidebar-link"><span class="icon">💳</span>Payments</a>
+      <a href="/admin-categories.html"  class="sidebar-link"><span class="icon">📋</span>Categories</a>
+      <a href="/admin-settings.html"    class="sidebar-link active"><span class="icon">⚙️</span>Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user"><div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Admin</div><div class="sidebar-user-role" style="color:#ef4444;">Administrator</div></div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Platform Settings</span>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+        <div><div class="page-title">Platform Settings</div><div class="page-subtitle">Configure fees, VIP, and platform behaviour</div></div>
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr;gap:24px;" id="settings-grid">
+
+        <!-- Commission -->
+        <div class="card">
+          <div class="card-header"><h3 style="font-size:1rem;">💸 Commission Rates</h3></div>
+          <div class="card-body">
+            <div style="background:var(--status-warning-bg);border:1px solid #fcd34d;border-radius:var(--radius-md);padding:12px 16px;margin-bottom:16px;font-size:0.875rem;">
+              ⚠️ Changing commission rates only affects <strong>new contracts</strong>. Existing contracts retain their locked rate.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label">Standard Commission (%)</label>
+                <input type="number" id="setting-standard-commission" class="form-input" value="20" min="0" max="50" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">VIP Commission (%)</label>
+                <input type="number" id="setting-vip-commission" class="form-input" value="7" min="0" max="50" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIP -->
+        <div class="card">
+          <div class="card-header"><h3 style="font-size:1rem;">⭐ VIP Subscription</h3></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label">Weekly Price (₦)</label>
+                <input type="number" id="setting-vip-price" class="form-input" value="9500" min="0" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Duration (days)</label>
+                <input type="number" id="setting-vip-duration" class="form-input" value="7" min="1" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Withdrawals -->
+        <div class="card">
+          <div class="card-header"><h3 style="font-size:1rem;">🏦 Withdrawal Settings</h3></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Minimum Withdrawal (₦)</label>
+              <input type="number" id="setting-min-withdrawal" class="form-input" value="10000" min="0" />
+            </div>
+            <div style="font-size:0.875rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">Fee Tiers</div>
+            <div style="display:flex;flex-direction:column;gap:8px;" id="fee-tiers">
+              <!-- Rendered by JS -->
+            </div>
+            <div style="font-size:0.8125rem;color:var(--text-muted);margin-top:12px;">To modify fee tiers, update the config/config.js file on the server and redeploy.</div>
+          </div>
+        </div>
+
+        <!-- Support Info -->
+        <div class="card">
+          <div class="card-header"><h3 style="font-size:1rem;">📞 Support Info</h3></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Support Email</label>
+              <input type="email" id="setting-support-email" class="form-input" placeholder="support@naijaworks.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Support WhatsApp</label>
+              <input type="tel" id="setting-support-whatsapp" class="form-input" placeholder="08012345678" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Maintenance Mode</label>
+              <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
+                <input type="checkbox" id="setting-maintenance" style="width:20px;height:20px;accent-color:var(--status-error);" />
+                <label for="setting-maintenance" style="font-size:0.9rem;color:var(--text-secondary);">Enable maintenance mode (blocks all logins)</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+// Render fee tiers from config
+const tiersEl = document.getElementById('fee-tiers');
+NaijaWorksConfig.platform.withdrawalFeeTiers.forEach(t => {
+  tiersEl.innerHTML += `
+    <div style="display:flex;justify-content:space-between;align-items:center;background:var(--charcoal-50);border-radius:var(--radius-sm);padding:10px 14px;font-size:0.875rem;">
+      <span>${t.label}</span>
+      <span style="font-weight:700;">₦${t.fee.toLocaleString()} fee</span>
+    </div>`;
+});
+
+async function loadSettings() {
+  try {
+    const data = await api.get('/api/v1/admin/settings');
+    const s = data.settings || {};
+    if (s.standardCommission) document.getElementById('setting-standard-commission').value = s.standardCommission;
+    if (s.vipCommission)      document.getElementById('setting-vip-commission').value      = s.vipCommission;
+    if (s.vipPriceNaira)      document.getElementById('setting-vip-price').value           = s.vipPriceNaira;
+    if (s.vipDurationDays)    document.getElementById('setting-vip-duration').value         = s.vipDurationDays;
+    if (s.minWithdrawal)      document.getElementById('setting-min-withdrawal').value        = s.minWithdrawal;
+    if (s.supportEmail)       document.getElementById('setting-support-email').value         = s.supportEmail;
+    if (s.supportWhatsapp)    document.getElementById('setting-support-whatsapp').value      = s.supportWhatsapp;
+    if (s.maintenanceMode)    document.getElementById('setting-maintenance').checked          = s.maintenanceMode;
+  } catch(e) { /* Settings may not exist yet, use defaults */ }
+}
+
+async function saveSettings() {
+  const settings = {
+    standardCommission: parseFloat(document.getElementById('setting-standard-commission').value),
+    vipCommission:      parseFloat(document.getElementById('setting-vip-commission').value),
+    vipPriceNaira:      parseFloat(document.getElementById('setting-vip-price').value),
+    vipDurationDays:    parseInt(document.getElementById('setting-vip-duration').value),
+    minWithdrawal:      parseFloat(document.getElementById('setting-min-withdrawal').value),
+    supportEmail:       document.getElementById('setting-support-email').value.trim(),
+    supportWhatsapp:    document.getElementById('setting-support-whatsapp').value.trim(),
+    maintenanceMode:    document.getElementById('setting-maintenance').checked,
+  };
+  try {
+    await api.put('/api/v1/admin/settings', settings);
+    showToast('Settings saved successfully!', 'success');
+  } catch(e) { showToast(e.message || 'Failed to save', 'error'); }
+}
+
+(async () => {
+  await initDashboard('admin');
+  await loadSettings();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <style>.admin-sidebar{background:#0d0f1a;}</style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar admin-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav">
+      <a href="/admin-dashboard.html" class="sidebar-link"><span class="icon">📊</span>Dashboard</a>
+      <a href="/admin-users.html" class="sidebar-link"><span class="icon">👥</span>Users</a>
+      <a href="/admin-jobs.html" class="sidebar-link"><span class="icon">💼</span>Jobs</a>
+      <a href="/admin-withdrawals.html" class="sidebar-link"><span class="icon">🏦</span>Withdrawals</a>
+      <a href="/admin-disputes.html" class="sidebar-link"><span class="icon">⚖️</span>Disputes</a>
+      <a href="/admin-payments.html" class="sidebar-link"><span class="icon">💳</span>Payments</a>
+      <a href="/admin-wallets.html" class="sidebar-link"><span class="icon">💰</span>Wallets</a>
+      <a href="/admin-categories.html" class="sidebar-link"><span class="icon">📋</span>Categories</a>
+      <a href="/admin-settings.html" class="sidebar-link"><span class="icon">⚙️</span>Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user"><div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Admin</div><div class="sidebar-user-role" style="color:#ef4444;">Administrator</div></div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title" id="page-title">Loading…</span>
+      </div>
+      <div class="topbar-right"><button onclick="loadData()" class="btn btn-ghost btn-sm">Refresh</button></div>
+    </div>
+    <div class="dash-content">
+      <div class="page-title" id="page-heading">Loading…</div>
+      <div class="card"><div class="data-table-wrap">
+        <table class="data-table"><thead id="table-head"></thead>
+        <tbody id="table-body"><tr><td colspan="10" style="text-align:center;padding:32px;"><div class="spinner dark" style="margin:0 auto 12px;"></div>Loading…</td></tr></tbody>
+        </table>
+      </div></div>
+    </div>
+  </main>
+</div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+const PAGE_TYPE = document.location.pathname.replace('/admin-','').replace('.html','');
+const CONFIGS = {
+  payments: {
+    title:'Payments', endpoint:'/api/v1/admin/payments', key:'payments',
+    heads:['Reference','Type','Amount','Provider','Status','Date'],
+    row: p => `<tr><td style="font-family:monospace;font-size:0.8rem;">${(p.reference||'').slice(0,22)}…</td><td>${p.relatedType||'—'}</td><td style="font-weight:700;">${formatNaira(p.amount)}</td><td>${p.provider||'paystack'}</td><td><span class="status-pill ${p.status==='success'?'status-completed':'status-pending'}">${p.status}</span></td><td>${timeAgo(p.createdAt)}</td></tr>`
+  },
+  wallets: {
+    title:'Wallets', endpoint:'/api/v1/admin/wallets', key:'wallets',
+    heads:['User','Available','Pending','Total Earned','Withdrawn'],
+    row: w => `<tr><td style="font-family:monospace;font-size:0.8rem;">${(w.uid||'').slice(0,12)}…</td><td style="font-weight:700;color:var(--primary);">${formatNaira(w.availableBalance)}</td><td>${formatNaira(w.pendingBalance)}</td><td style="color:var(--status-success);">${formatNaira(w.totalEarned)}</td><td>${formatNaira(w.totalWithdrawn)}</td></tr>`
+  },
+  jobs: {
+    title:'Jobs', endpoint:'/api/v1/admin/jobs', key:'jobs',
+    heads:['Title','Client','Category','Budget','Status','Posted'],
+    row: j => `<tr><td style="font-weight:600;">${truncate(j.title||'',35)}</td><td>${j.clientName||'—'}</td><td><span class="badge badge-gray">${j.category||'—'}</span></td><td>${formatNaira(j.budget)}</td><td><span class="status-pill ${j.status==='open'?'status-active':j.status==='completed'?'status-completed':'status-pending'}">${j.status}</span></td><td>${timeAgo(j.createdAt)}</td></tr>`
+  },
+  categories: {
+    title:'Categories', endpoint:'/api/v1/admin/categories', key:'categories',
+    heads:['Icon','Name','Type','Active',''],
+    row: c => `<tr><td>${c.icon||'🔧'}</td><td style="font-weight:600;">${c.name}</td><td><span class="badge badge-gray">${c.type}</span></td><td>${c.active?'<span class="badge badge-green">Active</span>':'<span class="badge badge-gray">Off</span>'}</td><td><button class="btn btn-ghost btn-sm" onclick="toggle('${c.id}',${!c.active})">${c.active?'Disable':'Enable'}</button></td></tr>`
+  }
+};
+
+const cfg = CONFIGS[PAGE_TYPE] || CONFIGS.payments;
+document.getElementById('page-title').textContent = cfg.title;
+document.getElementById('page-heading').textContent = cfg.title;
+
+async function loadData() {
+  document.getElementById('table-head').innerHTML = '<tr>' + cfg.heads.map(h=>`<th>${h}</th>`).join('') + '</tr>';
+  const tbody = document.getElementById('table-body');
+  try {
+    const data  = await api.get(cfg.endpoint);
+    const items = data[cfg.key] || [];
+    tbody.innerHTML = items.length ? items.map(cfg.row).join('') : `<tr><td colspan="${cfg.heads.length}" style="text-align:center;padding:32px;color:var(--text-muted);">No records found</td></tr>`;
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="${cfg.heads.length}" style="text-align:center;padding:24px;color:var(--status-error);">Failed to load</td></tr>`;
+  }
+}
+
+async function toggle(id, active) {
+  try {
+    await api.patch(`/api/v1/admin/categories/${id}`, { active });
+    showToast('Updated', 'success');
+    loadData();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+(async () => { await initDashboard('admin'); loadData(); })();
+</script>
+</body>
+</html>
