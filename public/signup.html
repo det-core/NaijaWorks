@@ -29,6 +29,10 @@
       text-align: center;
       transition: all var(--transition-normal);
       position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .role-option:hover { border-color: var(--primary); background: var(--green-50); }
     .role-option.selected { border-color: var(--primary); background: var(--green-50); }
@@ -139,7 +143,7 @@
           </div>
         </div>
 
-        <button class="btn btn-primary btn-full btn-lg" id="step1-next" onclick="goToStep(2)" disabled>
+        <button class="btn btn-primary btn-full btn-lg" id="step1-next" onclick="handleStep1Continue()">
           Continue →
         </button>
       </div>
@@ -283,7 +287,24 @@ function selectRole(role) {
   selectedRole = role;
   document.getElementById('role-client').classList.toggle('selected', role === 'client');
   document.getElementById('role-worker').classList.toggle('selected', role === 'worker');
-  document.getElementById('step1-next').disabled = false;
+
+  // Visual feedback on button — no disabled needed, we guard in handleStep1Continue
+  const btn = document.getElementById('step1-next');
+  btn.style.opacity = '1';
+  btn.style.transform = 'none';
+}
+
+function handleStep1Continue() {
+  if (!selectedRole) {
+    // Shake the role cards to prompt selection
+    document.querySelectorAll('.role-option').forEach(el => {
+      el.style.borderColor = 'var(--status-error)';
+      setTimeout(() => { el.style.borderColor = ''; }, 1500);
+    });
+    showToast('Please choose an account type first', 'warning');
+    return;
+  }
+  goToStep(2);
 }
 
 function goToStep(n) {
