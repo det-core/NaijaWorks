@@ -9,7 +9,7 @@ const config = {
   server: {
     port: process.env.PORT || 3000,
     nodeEnv: process.env.NODE_ENV || 'development',
-    baseUrl: 'https://naijaworks.com', // update for production
+    baseUrl: 'https://d-e-t.onrender.com', // update for production
     uploadLimit: '10mb',
   },
 
@@ -27,8 +27,8 @@ const config = {
     secretKey: 'sk_live_9878e0da1acf28502ee89ce4e692e99fa88d1d28',   // secret — never expose
     publicKey: 'pk_live_03fa82ae8e5a7e2bd1f81b49f8db6380a833a044',   // used in frontend config
     baseUrl: 'https://api.paystack.co',
-    webhookSecret: 'YOUR_PAYSTACK_WEBHOOK_SECRET',   // secret
-    callbackUrl: 'https://naijaworks.com/payment/callback',
+    webhookSecret: 'sk_live_9878e0da1acf28502ee89ce4e692e99fa88d1d28',   // secret
+    callbackUrl: 'https://d-e-t.onrender.com/payment/callback',
   },
 
   // ─── Platform Monetization ────────────────────────────────
