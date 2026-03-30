@@ -94,7 +94,9 @@ const config = {
     allowedOrigins: [
       'https://naijaworks.com',
       'https://www.naijaworks.com',
-      'http://localhost:3000', // dev only
+      'https://d-e-t.onrender.com',
+      'http://localhost:3000',
+      'http://localhost:5000',
     ],
   },
 

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Categories — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+<nav class="navbar">
+  <div class="container"><div class="nav-inner">
+    <a href="/" class="nav-logo"><div class="nav-logo-icon">N</div>Naija<span>Works</span></a>
+    <ul class="nav-links">
+      <li><a href="/browse-workers.html">Find Workers</a></li>
+      <li><a href="/categories.html" class="active">Categories</a></li>
+      <li><a href="/how-it-works.html">How It Works</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="/login.html" class="btn btn-ghost btn-sm hide-mobile" id="nav-login-btn">Log In</a>
+      <a href="/signup.html" class="btn btn-primary btn-sm" id="nav-signup-btn">Get Started</a>
+      <a href="/client-dashboard.html" class="btn btn-primary btn-sm" id="nav-dashboard-btn" style="display:none">Dashboard</a>
+      <button class="btn btn-ghost btn-sm" id="nav-logout-btn" data-logout style="display:none">Log Out</button>
+    </div>
+  </div></div>
+</nav>
+
+<div style="background:linear-gradient(135deg,var(--charcoal-900),var(--green-900));padding:56px 0;text-align:center;color:white;">
+  <div class="container">
+    <h1 style="color:white;font-size:clamp(1.75rem,4vw,2.5rem);margin-bottom:12px;">Browse All Categories</h1>
+    <p style="color:rgba(255,255,255,0.65);">Find the right professional for any job — local or remote.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Local Services</div>
+      <h2 class="section-title">Physical / In-Person Work</h2>
+      <p class="section-sub">Workers who come to you — for home, office, or outdoor jobs.</p>
+    </div>
+    <div class="category-grid" id="physical-grid"></div>
+
+    <div class="section-header" style="margin-top:var(--space-16);">
+      <div class="section-eyebrow">Digital Services</div>
+      <h2 class="section-title">Remote / Online Work</h2>
+      <p class="section-sub">Skilled professionals who work online from anywhere in Nigeria.</p>
+    </div>
+    <div class="category-grid" id="remote-grid"></div>
+
+    <div style="text-align:center;margin-top:var(--space-10);">
+      <a href="/browse-workers.html" class="btn btn-primary btn-lg">Browse All Workers →</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2025 NaijaWorks. All rights reserved.</p>
+      <a href="/" style="color:rgba(255,255,255,0.4);">← Back to Home</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script>
+NaijaWorksConfig.categories.physical.forEach(cat => {
+  document.getElementById('physical-grid').innerHTML += `
+    <a href="/browse-workers.html?category=${cat.id}&type=physical" class="category-card">
+      <div class="category-icon">${cat.icon}</div>
+      <span class="category-label">${cat.label}</span>
+    </a>`;
+});
+NaijaWorksConfig.categories.remote.forEach(cat => {
+  document.getElementById('remote-grid').innerHTML += `
+    <a href="/browse-workers.html?category=${cat.id}&type=remote" class="category-card">
+      <div class="category-icon">${cat.icon}</div>
+      <span class="category-label">${cat.label}</span>
+    </a>`;
+});
+</script>
+</body>
+</html>

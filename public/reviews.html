@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reviews — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <a href="/" class="sidebar-logo"><div class="sidebar-logo-icon">N</div>Naija<span>Works</span></a>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebar-user-avatar"></div>
+        <div><div class="sidebar-user-name" id="sidebar-user-name">Loading…</div><div class="sidebar-user-role" id="sidebar-user-role"></div></div>
+      </div>
+      <a class="sidebar-link" href="#" data-logout><span class="icon">🚪</span>Log Out</a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="topbar-hamburger" id="topbar-hamburger"><span></span><span></span><span></span></button>
+        <span class="topbar-title">Reviews</span>
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn" id="notif-btn">🔔<span class="notif-dot" id="notif-dot" style="display:none"></span></button>
+      </div>
+    </div>
+    <div class="notif-panel" id="notif-panel"><div class="notif-panel-header">Notifications</div><div class="notif-list"></div></div>
+
+    <div class="dash-content">
+      <div class="page-title">Reviews</div>
+      <div class="page-subtitle">What people say about your work</div>
+
+      <!-- Rating summary -->
+      <div class="card" style="padding:24px;margin-bottom:24px;display:flex;align-items:center;gap:32px;flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div id="avg-rating" style="font-size:3.5rem;font-weight:800;font-family:var(--font-display);color:var(--primary);line-height:1;">—</div>
+          <div id="avg-stars" style="font-size:1.5rem;color:#f59e0b;margin:4px 0;"></div>
+          <div id="review-count" style="font-size:0.875rem;color:var(--text-muted);">— reviews</div>
+        </div>
+        <div style="flex:1;min-width:200px;" id="rating-bars"></div>
+      </div>
+
+      <!-- Reviews list -->
+      <div class="card" style="padding:0;">
+        <div style="padding:16px 24px;border-bottom:1px solid var(--border);font-weight:700;font-family:var(--font-display);">All Reviews</div>
+        <div id="reviews-list" style="padding:0 24px;">
+          <div style="text-align:center;padding:32px;"><div class="spinner dark" style="margin:0 auto 12px;"></div>Loading…</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script src="/js/dashboard.js"></script>
+<script>
+(async () => {
+  await initDashboard();
+
+  const nav = document.getElementById('sidebar-nav');
+  const base = dashUser.role === 'worker' ? '/worker-dashboard.html' : '/client-dashboard.html';
+  nav.innerHTML = `
+    <a href="${base}" class="sidebar-link"><span class="icon">🏠</span>Dashboard</a>
+    <a href="/contracts.html" class="sidebar-link"><span class="icon">📄</span>Contracts</a>
+    <a href="/reviews.html" class="sidebar-link active"><span class="icon">⭐</span>Reviews</a>`;
+
+  try {
+    const res = await fetch(`/api/v1/reviews?workerId=${dashUser.uid}&limit=50`);
+    const data = await res.json();
+    const reviews = data.reviews || [];
+
+    // Summary
+    if (reviews.length) {
+      const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+      document.getElementById('avg-rating').textContent = avg.toFixed(1);
+      document.getElementById('avg-stars').innerHTML = renderStars(Math.round(avg));
+      document.getElementById('review-count').textContent = `${reviews.length} review${reviews.length !== 1 ? 's' : ''}`;
+
+      // Rating bars
+      const counts = [5,4,3,2,1].map(n => ({ n, count: reviews.filter(r => r.rating === n).length }));
+      document.getElementById('rating-bars').innerHTML = counts.map(({ n, count }) => {
+        const pct = reviews.length ? Math.round((count / reviews.length) * 100) : 0;
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:0.875rem;">
+          <span style="width:12px;text-align:right;color:var(--text-muted);">${n}</span>
+          <span style="color:#f59e0b;">★</span>
+          <div style="flex:1;height:8px;background:var(--charcoal-100);border-radius:4px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:#f59e0b;border-radius:4px;"></div>
+          </div>
+          <span style="width:30px;color:var(--text-muted);">${count}</span>
+        </div>`;
+      }).join('');
+    } else {
+      document.getElementById('avg-rating').textContent = '—';
+      document.getElementById('review-count').textContent = 'No reviews yet';
+    }
+
+    // List
+    const listEl = document.getElementById('reviews-list');
+    if (!reviews.length) {
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⭐</div><div class="empty-state-title">No reviews yet</div><div class="empty-state-desc">Complete jobs and your clients will be able to leave reviews.</div></div>`;
+      return;
+    }
+    listEl.innerHTML = reviews.map(r => `
+      <div style="padding:20px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--green-800));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.875rem;font-family:var(--font-display);flex-shrink:0;">${getInitials(r.fromUserName||'?')}</div>
+          <div>
+            <div style="font-weight:700;font-size:0.9375rem;">${r.fromUserName || 'Client'}</div>
+            <div style="font-size:0.8125rem;display:flex;align-items:center;gap:8px;">
+              <span style="color:#f59e0b;">${renderStars(r.rating)}</span>
+              <span style="color:var(--text-muted);">${timeAgo(r.createdAt)}</span>
+            </div>
+          </div>
+        </div>
+        ${r.reviewText ? `<p style="font-size:0.9375rem;color:var(--text-secondary);line-height:1.7;font-style:italic;">"${r.reviewText}"</p>` : ''}
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('reviews-list').innerHTML = `<div style="text-align:center;padding:24px;color:var(--status-error);">Failed to load reviews</div>`;
+  }
+})();
+</script>
+</body>
+</html>

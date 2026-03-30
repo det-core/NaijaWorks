@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+<nav class="navbar">
+  <div class="container"><div class="nav-inner">
+    <a href="/" class="nav-logo"><div class="nav-logo-icon">N</div>Naija<span>Works</span></a>
+    <ul class="nav-links">
+      <li><a href="/browse-workers.html">Find Workers</a></li>
+      <li><a href="/how-it-works.html">How It Works</a></li>
+      <li><a href="/contact.html" class="active">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="/login.html" class="btn btn-ghost btn-sm hide-mobile" id="nav-login-btn">Log In</a>
+      <a href="/signup.html" class="btn btn-primary btn-sm" id="nav-signup-btn">Get Started</a>
+      <a href="/client-dashboard.html" class="btn btn-primary btn-sm" id="nav-dashboard-btn" style="display:none">Dashboard</a>
+      <button class="btn btn-ghost btn-sm" id="nav-logout-btn" data-logout style="display:none">Log Out</button>
+    </div>
+  </div></div>
+</nav>
+
+<div style="background:linear-gradient(135deg,var(--charcoal-900),var(--green-900));padding:64px 0;text-align:center;color:white;">
+  <div class="container">
+    <h1 style="color:white;font-size:clamp(2rem,4vw,2.5rem);margin-bottom:16px;">Contact Us</h1>
+    <p style="color:rgba(255,255,255,0.65);font-size:1.0625rem;">We're here to help. Reach out any time.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container" style="max-width:860px;">
+    <div style="display:grid;grid-template-columns:1fr;gap:32px;">
+
+      <!-- Contact cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
+        <div class="card" style="padding:24px;text-align:center;">
+          <div style="font-size:2rem;margin-bottom:12px;">📧</div>
+          <h4 style="margin-bottom:6px;">Email Support</h4>
+          <p style="font-size:0.875rem;color:var(--text-muted);margin-bottom:12px;">Get a response within 24 hours</p>
+          <a href="mailto:darkempiretech@gmail.com" style="color:var(--primary);font-weight:600;font-size:0.9375rem;">darkempiretech@gmail.com</a>
+        </div>
+        <div class="card" style="padding:24px;text-align:center;">
+          <div style="font-size:2rem;margin-bottom:12px;">💬</div>
+          <h4 style="margin-bottom:6px;">WhatsApp</h4>
+          <p style="font-size:0.875rem;color:var(--text-muted);margin-bottom:12px;">Fast response during business hours</p>
+          <a href="https://wa.me/234" style="color:var(--primary);font-weight:600;font-size:0.9375rem;">Chat on WhatsApp</a>
+        </div>
+        <div class="card" style="padding:24px;text-align:center;">
+          <div style="font-size:2rem;margin-bottom:12px;">⏰</div>
+          <h4 style="margin-bottom:6px;">Support Hours</h4>
+          <p style="font-size:0.875rem;color:var(--text-muted);">Mon – Sat<br/>8:00am – 8:00pm WAT</p>
+        </div>
+      </div>
+
+      <!-- Contact form -->
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:1rem;">Send Us a Message</h3></div>
+        <div class="card-body">
+          <div id="form-success" style="display:none;background:var(--status-success-bg);border:1px solid #86efac;border-radius:var(--radius-md);padding:14px 16px;margin-bottom:20px;color:var(--status-success);font-weight:600;">
+            ✅ Message sent! We'll get back to you within 24 hours.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group">
+              <label class="form-label">Your Name <span class="required">*</span></label>
+              <input type="text" id="contact-name" class="form-input" placeholder="e.g. Emeka Okafor" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input type="email" id="contact-email" class="form-input" placeholder="you@example.com" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject <span class="required">*</span></label>
+            <select id="contact-subject" class="form-select">
+              <option value="">Select a topic</option>
+              <option>I have a problem with a payment</option>
+              <option>I want to report a worker</option>
+              <option>I want to report a client</option>
+              <option>My withdrawal is delayed</option>
+              <option>I can't log in to my account</option>
+              <option>I want to dispute a job</option>
+              <option>General question</option>
+              <option>Something else</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message <span class="required">*</span></label>
+            <textarea id="contact-message" class="form-input" rows="5" placeholder="Describe your issue or question in detail. Include any relevant job or contract IDs if applicable."></textarea>
+          </div>
+          <button class="btn btn-primary" id="contact-submit-btn" onclick="submitContact()">Send Message</button>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div>
+        <h3 style="font-size:1.125rem;margin-bottom:20px;">Frequently Asked Questions</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;" id="faq-list">
+          <div class="card" style="padding:0;overflow:hidden;">
+            <button onclick="toggleFaq(this)" style="width:100%;text-align:left;padding:16px 20px;background:none;border:none;cursor:pointer;font-weight:600;font-size:0.9375rem;display:flex;justify-content:space-between;align-items:center;">How does the escrow payment work? <span>+</span></button>
+            <div class="faq-answer" style="display:none;padding:0 20px 16px;font-size:0.9375rem;color:var(--text-secondary);line-height:1.7;">When you pay for a job on NaijaWorks, your money goes into an escrow held by NaijaWorks — not to the worker. The worker only receives payment after you confirm the work is done and you're satisfied. This protects both parties.</div>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden;">
+            <button onclick="toggleFaq(this)" style="width:100%;text-align:left;padding:16px 20px;background:none;border:none;cursor:pointer;font-weight:600;font-size:0.9375rem;display:flex;justify-content:space-between;align-items:center;">How long does withdrawal take? <span>+</span></button>
+            <div class="faq-answer" style="display:none;padding:0 20px 16px;font-size:0.9375rem;color:var(--text-secondary);line-height:1.7;">Withdrawals are processed within 24–48 hours on normal business days. During bank holidays or high-volume periods it may take up to 3 business days. Minimum withdrawal is ₦10,000.</div>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden;">
+            <button onclick="toggleFaq(this)" style="width:100%;text-align:left;padding:16px 20px;background:none;border:none;cursor:pointer;font-weight:600;font-size:0.9375rem;display:flex;justify-content:space-between;align-items:center;">What happens if the worker does bad work? <span>+</span></button>
+            <div class="faq-answer" style="display:none;padding:0 20px 16px;font-size:0.9375rem;color:var(--text-secondary);line-height:1.7;">Don't confirm the job if you're not satisfied. You can raise a dispute from the contract page and our admin team will review the evidence from both sides and resolve it fairly. Your money stays in escrow until the dispute is resolved.</div>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden;">
+            <button onclick="toggleFaq(this)" style="width:100%;text-align:left;padding:16px 20px;background:none;border:none;cursor:pointer;font-weight:600;font-size:0.9375rem;display:flex;justify-content:space-between;align-items:center;">How is VIP commission calculated? <span>+</span></button>
+            <div class="faq-answer" style="display:none;padding:0 20px 16px;font-size:0.9375rem;color:var(--text-secondary);line-height:1.7;">VIP workers pay 7% commission instead of 20%. This rate is locked when the contract is created. If your VIP expires before a job is completed, contracts created while VIP was active still use the 7% rate.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2025 NaijaWorks. All rights reserved.</p>
+      <a href="/" style="color:rgba(255,255,255,0.4);">← Back to Home</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script>
+function toggleFaq(btn) {
+  const answer = btn.nextElementSibling;
+  const icon   = btn.querySelector('span');
+  const open   = answer.style.display === 'block';
+  answer.style.display = open ? 'none' : 'block';
+  icon.textContent = open ? '+' : '−';
+}
+
+function submitContact() {
+  const name    = document.getElementById('contact-name').value.trim();
+  const email   = document.getElementById('contact-email').value.trim();
+  const subject = document.getElementById('contact-subject').value;
+  const message = document.getElementById('contact-message').value.trim();
+  const btn     = document.getElementById('contact-submit-btn');
+
+  if (!name || !email || !subject || !message) {
+    showToast('Please fill in all fields', 'warning');
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast('Please enter a valid email address', 'warning');
+    return;
+  }
+
+  // Open email client with prefilled content
+  const mailBody = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+  const mailSubject = encodeURIComponent(`[NaijaWorks Support] ${subject}`);
+  window.location.href = `mailto:darkempiretech@gmail.com?subject=${mailSubject}&body=${mailBody}`;
+
+  document.getElementById('form-success').style.display = 'block';
+  setButtonLoading(btn, false, 'Send Message');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse Jobs — NaijaWorks</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    .job-card { background:white; border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px 24px; transition:all var(--transition-normal); cursor:pointer; display:block; text-decoration:none; color:inherit; }
+    .job-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:transparent; }
+    .jobs-grid { display:grid; grid-template-columns:1fr; gap:16px; }
+    @media(min-width:768px) { .jobs-grid { grid-template-columns:repeat(2,1fr); } }
+    @media(min-width:1200px) { .jobs-grid { grid-template-columns:repeat(3,1fr); } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="container"><div class="nav-inner">
+    <a href="/" class="nav-logo"><div class="nav-logo-icon">N</div>Naija<span>Works</span></a>
+    <ul class="nav-links">
+      <li><a href="/browse-workers.html">Find Workers</a></li>
+      <li><a href="/browse-jobs.html" class="active">Find Jobs</a></li>
+      <li><a href="/how-it-works.html">How It Works</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="/login.html" class="btn btn-ghost btn-sm hide-mobile" id="nav-login-btn">Log In</a>
+      <a href="/signup.html?role=worker" class="btn btn-primary btn-sm" id="nav-signup-btn">Join as Worker</a>
+      <a href="/worker-dashboard.html" class="btn btn-primary btn-sm" id="nav-dashboard-btn" style="display:none">Dashboard</a>
+      <button class="btn btn-ghost btn-sm" id="nav-logout-btn" data-logout style="display:none">Log Out</button>
+    </div>
+  </div></div>
+</nav>
+
+<div style="background:linear-gradient(135deg,var(--charcoal-900),var(--green-900));padding:56px 0;color:white;">
+  <div class="container">
+    <h1 style="color:white;font-size:clamp(1.75rem,3vw,2.25rem);margin-bottom:8px;">Browse Open Jobs</h1>
+    <p style="color:rgba(255,255,255,0.65);">Clients are looking for workers right now. Find a job that matches your skills.</p>
+    <div style="margin-top:24px;max-width:560px;">
+      <div style="display:flex;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-md);overflow:hidden;">
+        <input type="text" id="search-input" placeholder="Search jobs by title, skill…" style="flex:1;border:none;outline:none;background:transparent;color:white;padding:12px 16px;font-size:0.9375rem;font-family:var(--font-body);" />
+        <button onclick="loadJobs()" class="btn btn-primary" style="border-radius:0;flex-shrink:0;">Search</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section-sm">
+  <div class="container">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;align-items:center;">
+      <select id="category-filter" class="form-select" style="width:auto;min-height:40px;" onchange="loadJobs()">
+        <option value="">All Categories</option>
+      </select>
+      <select id="type-filter" class="form-select" style="width:auto;min-height:40px;" onchange="loadJobs()">
+        <option value="">All Types</option>
+        <option value="physical">Physical / Local</option>
+        <option value="remote">Remote / Digital</option>
+      </select>
+      <select id="state-filter" class="form-select" style="width:auto;min-height:40px;" onchange="loadJobs()">
+        <option value="">All States</option>
+      </select>
+      <span id="results-count" style="font-size:0.875rem;color:var(--text-muted);margin-left:auto;"></span>
+    </div>
+
+    <div class="jobs-grid" id="jobs-grid">
+      <div class="card" style="height:160px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:160px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:160px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:160px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:160px;"><div class="skeleton" style="height:100%;"></div></div>
+      <div class="card" style="height:160px;"><div class="skeleton" style="height:100%;"></div></div>
+    </div>
+
+    <div style="text-align:center;margin-top:32px;" id="cta-worker" style="display:none;">
+      <p style="color:var(--text-muted);margin-bottom:16px;">Want to apply for jobs? Create your worker profile first.</p>
+      <a href="/signup.html?role=worker" class="btn btn-primary btn-lg">Join as a Worker — It's Free</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2025 NaijaWorks. All rights reserved.</p>
+      <a href="/" style="color:rgba(255,255,255,0.4);">← Back to Home</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="/js/config.js"></script>
+<script>firebase.initializeApp(NaijaWorksConfig.firebase);</script>
+<script src="/js/main.js"></script>
+<script>
+// Populate filters
+const catSelect = document.getElementById('category-filter');
+[...NaijaWorksConfig.categories.physical, ...NaijaWorksConfig.categories.remote].forEach(c => {
+  catSelect.innerHTML += `<option value="${c.id}">${c.icon} ${c.label}</option>`;
+});
+const stateSelect = document.getElementById('state-filter');
+NaijaWorksConfig.nigerianStates.forEach(s => { stateSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+
+async function loadJobs() {
+  const grid     = document.getElementById('jobs-grid');
+  const q        = document.getElementById('search-input').value.trim();
+  const category = document.getElementById('category-filter').value;
+  const type     = document.getElementById('type-filter').value;
+  const state    = document.getElementById('state-filter').value;
+
+  grid.innerHTML = Array(6).fill(`<div class="card" style="height:160px;"><div class="skeleton" style="height:100%;"></div></div>`).join('');
+
+  try {
+    const params = new URLSearchParams({ status: 'open', limit: 30 });
+    if (q)        params.set('q', q);
+    if (category) params.set('category', category);
+    if (type)     params.set('workMode', type);
+    if (state)    params.set('state', state);
+
+    // Public jobs endpoint — no auth required
+    const db = firebase.firestore();
+    let query = db.collection('jobs').where('status','==','open').orderBy('createdAt','desc').limit(30);
+    const snap = await query.get();
+    let jobs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Client-side filter
+    if (q) {
+      const ql = q.toLowerCase();
+      jobs = jobs.filter(j => j.title?.toLowerCase().includes(ql) || j.description?.toLowerCase().includes(ql) || j.category?.toLowerCase().includes(ql));
+    }
+    if (category) jobs = jobs.filter(j => j.category === category);
+    if (type)     jobs = jobs.filter(j => j.workMode === type);
+    if (state)    jobs = jobs.filter(j => j.state === state);
+
+    document.getElementById('results-count').textContent = `${jobs.length} open job${jobs.length !== 1 ? 's' : ''}`;
+    document.getElementById('cta-worker').style.display = jobs.length ? 'block' : 'none';
+
+    if (!jobs.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-state-icon">💼</div>
+        <div class="empty-state-title">No open jobs found</div>
+        <div class="empty-state-desc">Try different filters, or check back later as new jobs are posted daily.</div>
+      </div>`;
+      return;
+    }
+
+    grid.innerHTML = jobs.map(j => `
+      <div class="job-card" onclick="handleJobClick('${j.id}')">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;">
+          <div>
+            <div style="font-weight:700;font-size:1rem;font-family:var(--font-display);">${j.title}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">
+              ${j.workMode === 'remote' ? '💻 Remote' : '📍 ' + (j.city || j.state || 'Nigeria')}
+            </div>
+          </div>
+          <div style="font-size:1.125rem;font-weight:800;font-family:var(--font-display);color:var(--primary);white-space:nowrap;">${formatNaira(j.budget)}</div>
+        </div>
+        <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">${truncate(j.description||'', 120)}</p>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${j.category ? `<span class="badge badge-gray" style="font-size:0.7rem;">${j.category}</span>` : ''}
+          ${j.duration ? `<span style="font-size:0.75rem;color:var(--text-muted);">⏱ ${j.duration}</span>` : ''}
+          <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">${timeAgo(j.createdAt)}</span>
+        </div>
+      </div>`).join('');
+
+  } catch(e) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-state-icon">⚠️</div>
+      <div class="empty-state-title">Failed to load jobs</div>
+      <button class="btn btn-ghost" onclick="loadJobs()">Retry</button>
+    </div>`;
+  }
+}
+
+function handleJobClick(jobId) {
+  // If logged in as worker, go to offers page
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      window.location.href = `/offers.html`;
+    } else {
+      window.location.href = `/signup.html?role=worker`;
+    }
+  });
+}
+
+document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') loadJobs(); });
+
+loadJobs();
+</script>
+</body>
+</html>

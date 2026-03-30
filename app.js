@@ -24,7 +24,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       imgSrc: ["'self'", 'data:', 'https:'],
-      connectSrc: ["'self'", 'https://api.paystack.co', 'https://*.firebaseio.com', 'https://*.googleapis.com'],
+      connectSrc: ["'self'", 'https://api.paystack.co', 'https://*.firebaseio.com', 'https://*.googleapis.com', 'https://nominatim.openstreetmap.org', 'https://firestore.googleapis.com', 'https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com'],
       frameSrc: ["'self'", 'https://js.paystack.co'],
     },
   },
