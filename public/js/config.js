@@ -10,24 +10,24 @@ const NaijaWorksConfig = {
     name: 'NaijaWorks',
     tagline: 'Hire Trusted Nigerian Workers — Locally & Remotely',
     baseUrl: 'https://naijaworks.com',
-    supportEmail: 'support@naijaworks.com',
+    supportEmail: 'darkempiretech@gmail.com',
     currency: 'NGN',
     currencySymbol: '₦',
   },
 
   // ─── Firebase Client SDK (public — safe to expose) ────────
   firebase: {
-    apiKey: 'YOUR_FIREBASE_API_KEY',
-    authDomain: 'YOUR_PROJECT.firebaseapp.com',
-    projectId: 'YOUR_FIREBASE_PROJECT_ID',
-    storageBucket: 'YOUR_PROJECT.appspot.com',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    appId: 'YOUR_APP_ID',
+    apiKey: 'AIzaSyD7DWOQQHPqWspI0XpTwiZc6AB3f0hImiw',
+    authDomain: 'naijaworks-a56ac.firebaseapp.com',
+    projectId: 'naijaworks-a56ac',
+    storageBucket: 'naijaworks-a56ac.firebasestorage.app',
+    messagingSenderId: '146945289987',
+    appId: '1:146945289987:web:d73f01e49434def3ac4336',
   },
 
   // ─── Paystack Public Key ──────────────────────────────────
   paystack: {
-    publicKey: 'pk_live_YOUR_PAYSTACK_PUBLIC_KEY',
+    publicKey: 'pk_live_03fa82ae8e5a7e2bd1f81b49f8db6380a833a044',
   },
 
   // ─── Platform Rules (mirrors server config) ───────────────

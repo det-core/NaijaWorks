@@ -16,16 +16,16 @@ const config = {
   // ─── Firebase Admin (Service Account) ─────────────────────
   // Replace these values with your Firebase service account credentials
   firebase: {
-    projectId: 'YOUR_FIREBASE_PROJECT_ID',
-    privateKey: 'YOUR_FIREBASE_PRIVATE_KEY',         // secret
-    clientEmail: 'YOUR_FIREBASE_CLIENT_EMAIL',       // secret
+    projectId: 'naijaworks-a56ac',
+    privateKey: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCs40xdV96OIggj\n5/AgcztP6+zDrNsDAUPwF+Eyh/fNpaDePaycsu9DpMwpYgbnsp/8ctzyZc9r9YlD\nmwEwThZm3B8KXmTKKh9uckxXurnq6mxsbBtC2gNJ7e5fawN94AsfnDo+AVb35d5g\n1zftZhOtcMnMFeE6T6KMJ0nrvT4qFHUSHOKzo30DHqQ1AwS7e8etbNDBAcRrQmiy\no7P6XvPlGRRo+7v84/n50u3w44hO6Y5AaCR/Lgdie5CVL6IzkHC2HebjDVmQM8Wc\nh2MsbE2ARmIpa+X49WT9kPaAHsy78a+sVpul7ZaL21STZ60/FXOVmYwvpuEEsK76\nikyiR+v5AgMBAAECggEATK3nccMGL44ChEJbq1jQZqsh8Muau6N1CWjd9bZ+ftRG\nHCvIghuOqTbPYk9a9qqv8JzVSCFFtQFK5xQ5m74Wi3p3vfaNx2iVVjwVhheIXBur\nCQ+Nq8HcEY8Y2XMyMkMLS/LTliqr8vkd/1+VK5LJiXRr3DucEGu/kV/fllHx32FG\nungU0m3UjaLI0j/sYo3qSNuCif9MBAy2znRMnVnsTnhhwxS4ajQG/zvE6ttu4zxp\ny2rNXhoF+DXabVQVZJMLg+YGQiQSDXj/VCguBbN1o7CdaQ+Bk2BSqxjcImY1jNHe\nHJWT2yN57YEDdvfQSmGwug432+wYgSSPnTE6CZW5TQKBgQDXqoEMX0F6Y0eilGt7\nQ3XGVq92OW4698B8xF1cpBVYawv5poz/oVTrMUbms41H7HPjewrofQIj7++v6Gvq\n6w6icGnnJJy7XABr2d+YLjCofutLxIz+uzsMvwjCmlR6Lnt+xluKD/a6kXRlrP2I\nFwk/+eFNw6j+BbY3m+okM1EB6wKBgQDNOLG6vaipfbM1r8ThPxK97iNNf80MTlxn\nbuUOSLp74blT+d6wY6hXcNi4awjbEa1PmZQCLlYXlZDHFFVI0SpFEthqYWf58/OL\nPzPzIzXYrRF8CExu7S2EPdTk5PfdeksfzK4mtUMlohwrOJMtAIDaPlQG6toC1QLl\nnu29J3XsqwKBgEe1cslJVv05y5TcYsyOhreXFSprOCK1RDR4Gk72Y/6NQWMWJOXO\nn+y/6sJEy2Ix1eq6e8sH3dFTM1A7KL7ov2n1lND9VHvbwGwb+oOgQB+Wa+g6h2Mf\noCfB0UjbheFGWVuy2rcSTciFGr3AAmDgv/ucu3Re7W7hOVBOMFEvGu1XAoGBAJaT\nYKSaACTMXC+qFhUHSGMfVbvJZ9P9swMZdOt0JZA74NVi4ygdFymBXSKDNm42nClp\nkBXBld2cGixYGPNitVcVKsFzUu0tN6cV6rIdRacD5W5SUHKbh+gdzhVcgxl4X6Kn\ndahlGy2DspNr4WEFm4WGcfTZYLjvPj7oy5scVwQdAoGAcoG7qL5c5JrbgPzxscQi\nfHI6TOhVky5/ECgD/uXEaYqSL8LrK+ayKqLSiiSkYRvSkLOY8I0AZt/9XfA1Vv05\nyhlsqx5rtW8T6WE7NgmQ2AOl+fY5I3w7ni7KpOB5o9XF7soQzphx3pGwYjsrPmdH\nxttIS14PAnE1TquApXJc+vA=\n-----END PRIVATE KEY-----\n',         // secret
+    clientEmail: 'firebase-adminsdk-fbsvc@naijaworks-a56ac.iam.gserviceaccount.com',       // secret
     databaseURL: 'YOUR_FIREBASE_DATABASE_URL',
   },
 
   // ─── Paystack ─────────────────────────────────────────────
   paystack: {
-    secretKey: 'sk_live_YOUR_PAYSTACK_SECRET_KEY',   // secret — never expose
-    publicKey: 'pk_live_YOUR_PAYSTACK_PUBLIC_KEY',   // used in frontend config
+    secretKey: 'sk_live_9878e0da1acf28502ee89ce4e692e99fa88d1d28',   // secret — never expose
+    publicKey: 'pk_live_03fa82ae8e5a7e2bd1f81b49f8db6380a833a044',   // used in frontend config
     baseUrl: 'https://api.paystack.co',
     webhookSecret: 'YOUR_PAYSTACK_WEBHOOK_SECRET',   // secret
     callbackUrl: 'https://naijaworks.com/payment/callback',
@@ -79,7 +79,7 @@ const config = {
   admin: {
     // Admin UIDs must be set in Firestore users collection with role: 'admin'
     // Or add UIDs here as a secondary check
-    superAdminEmail: 'admin@naijaworks.com',
+    superAdminEmail: 'det@admin.com',
   },
 
   // ─── Rate Limiting ────────────────────────────────────────
